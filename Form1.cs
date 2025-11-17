@@ -22,6 +22,11 @@ using System.Drawing.Imaging;
 using Microsoft.Office.Interop.Excel;
 using static DAT_ToolReports.Form3;
 using System.Globalization;
+using System.Diagnostics;
+using iTextSharp.text;
+using iTextSharp.text.pdf;
+
+
 
 namespace DAT_ToolReports
 {
@@ -598,8 +603,8 @@ namespace DAT_ToolReports
                 style7.Font.Name = "Times New Roman";
                 style7.Font.IsItalic = true;
                 Cells.Merge(3, 5, 1, 4);
-                Cells["F4"].Value = "    ";// DAT_ToolReports.Properties.Settings.Default.Province + ", ngày " + DateTime.Now.Day.ToString() + " tháng " + DateTime.Now.Month.ToString() + " năm " + DateTime.Now.Year.ToString();
-                Cells["F4"].SetStyle(style7);
+                //Cells["F4"].Value = "    ";// DAT_ToolReports.Properties.Settings.Default.Province + ", ngày " + DateTime.Now.Day.ToString() + " tháng " + DateTime.Now.Month.ToString() + " năm " + DateTime.Now.Year.ToString();
+                //Cells["F4"].SetStyle(style7);
 
                 Aspose.Cells.Style styleTitle;
                 styleTitle = Cells["F1"].GetStyle();
@@ -2536,7 +2541,7 @@ namespace DAT_ToolReports
             try
             {
                 Cursor.Current = Cursors.WaitCursor;
-
+                System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
                 Aspose.Cells.Workbook workbook = new Aspose.Cells.Workbook();
                 Aspose.Cells.Worksheet worksheet = workbook.Worksheets[0];
                 object misValue = System.Reflection.Missing.Value;
@@ -2830,6 +2835,153 @@ namespace DAT_ToolReports
                 MessageBox.Show("Lỗi xuất file XLS.\n" + se.Message, "Thông báo");
             }
             Cursor.Current = Cursors.Default;
+        }
+
+
+        //PDF
+        private void CreatFilePdfReportSession_FromExcel(string filePDF, string reportName, List<TraineeRes> trainees)
+        {
+            try
+            {
+                // Landscape
+                Document document = new Document(PageSize.A4.Rotate(), 40, 40, 40, 40);
+                PdfWriter.GetInstance(document, new FileStream(filePDF, FileMode.Create));
+                document.Open();
+                
+                System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
+                // Dùng font Windows TTF
+                string fontPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), @"Fonts\times.ttf");
+                BaseFont bf = BaseFont.CreateFont(fontPath, BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
+
+                iTextSharp.text.Font fontHeader = new iTextSharp.text.Font(bf, 13, iTextSharp.text.Font.BOLD);
+                iTextSharp.text.Font fontHeaderItalic = new iTextSharp.text.Font(bf, 13, iTextSharp.text.Font.ITALIC);
+                iTextSharp.text.Font fontTitle = new iTextSharp.text.Font(bf, 15, iTextSharp.text.Font.BOLD);
+                iTextSharp.text.Font fontTableHeader = new iTextSharp.text.Font(bf, 13, iTextSharp.text.Font.BOLD);
+                iTextSharp.text.Font fontTableCell = new iTextSharp.text.Font(bf, 12, iTextSharp.text.Font.NORMAL);
+
+                // ----- Header báo cáo -----
+                PdfPTable headerTable = new PdfPTable(2);
+                headerTable.WidthPercentage = 100;
+                headerTable.SetWidths(new float[] { 50f, 50f }); // chia đều 2 cột
+
+                // Cột trái
+                PdfPCell cellLeft = new PdfPCell();
+                cellLeft.Border = PdfPCell.NO_BORDER;
+                cellLeft.HorizontalAlignment = Element.ALIGN_CENTER; // căn giữa trong cột
+                cellLeft.VerticalAlignment = Element.ALIGN_TOP;
+                cellLeft.AddElement(new Paragraph("CTY CP CÔNG NGHỆ SÁT HẠCH TOÀN PHƯƠNG", fontHeader) { Alignment = Element.ALIGN_CENTER });
+                cellLeft.AddElement(new Paragraph("TRUNG TÂM ĐT VÀ SHLX VIỆT THANH", fontHeader) { Alignment = Element.ALIGN_CENTER });
+                cellLeft.AddElement(new Paragraph("***********", fontHeaderItalic) { Alignment = Element.ALIGN_CENTER });
+
+                // Cột phải
+                PdfPCell cellRight = new PdfPCell();
+                cellRight.Border = PdfPCell.NO_BORDER;
+                cellRight.HorizontalAlignment = Element.ALIGN_CENTER;
+                cellRight.VerticalAlignment = Element.ALIGN_TOP;
+                cellRight.AddElement(new Paragraph("CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM", fontHeader) { Alignment = Element.ALIGN_CENTER });
+                cellRight.AddElement(new Paragraph("Độc lập - Tự do - Hạnh phúc", fontHeaderItalic) { Alignment = Element.ALIGN_CENTER });
+                cellRight.AddElement(new Paragraph("***********", fontHeaderItalic) { Alignment = Element.ALIGN_CENTER });
+                cellRight.AddElement(new Paragraph($"Hà Nội, ngày {DateTime.Now.Day} tháng {DateTime.Now.Month} năm {DateTime.Now.Year}", fontHeaderItalic) { Alignment = Element.ALIGN_CENTER });
+
+                headerTable.AddCell(cellLeft);
+                headerTable.AddCell(cellRight);
+                document.Add(headerTable);
+
+                // Title
+                Paragraph title = new Paragraph("BÁO CÁO KẾT QUẢ ĐÀO TẠO THỰC HÀNH LÁI XE TRÊN ĐƯỜNG GIAO THÔNG", fontTitle);
+                title.Alignment = Element.ALIGN_CENTER;
+                title.SpacingBefore = 10;
+                document.Add(title);
+
+                Paragraph reportDate = new Paragraph($"(Ngày báo cáo: ngày {DateTime.Now.Day} tháng {DateTime.Now.Month} năm {DateTime.Now.Year})", fontHeaderItalic);
+                reportDate.Alignment = Element.ALIGN_CENTER;
+                reportDate.SpacingAfter = 10;
+                document.Add(reportDate);
+
+                Paragraph infoList = new Paragraph($"THEO DANH SÁCH THÍ SINH SÁT HẠCH: {reportName}", fontHeader);
+                infoList.Alignment = Element.ALIGN_CENTER;
+                infoList.SpacingAfter = 10;
+                document.Add(infoList);
+
+                // Section II
+                Paragraph sectionII = new Paragraph("II. Thông tin quá trình đào tạo", fontHeader);
+                sectionII.Alignment = Element.ALIGN_CENTER;
+                sectionII.SpacingAfter = 5;
+                document.Add(sectionII);
+
+                // ----- Bảng dữ liệu -----
+                PdfPTable table = new PdfPTable(9); // 9 cột đúng như mẫu
+                table.WidthPercentage = 100;
+                table.SetWidths(new float[] { 3f, 10f, 20f, 10f, 5f, 8f, 8f, 8f, 8f });
+
+                // Header
+                string[] cols = { "STT", "Mã học viên", "Họ và tên", "Ngày sinh", "Hạng", "Thời gian đào tạo", "Quãng đường đào tạo", "Thời gian học số tự động", "Thời gian học ban đêm" };
+                foreach (var col in cols)
+                {
+                    PdfPCell cell1 = new PdfPCell(new Phrase(col, fontTableHeader));
+                    cell1.HorizontalAlignment = Element.ALIGN_CENTER;
+                    cell1.BackgroundColor = BaseColor.LIGHT_GRAY;
+                    table.AddCell(cell1);
+                }
+
+                // Dữ liệu
+                int stt = 1;
+                foreach (var trainee in trainees)
+                {
+                    table.AddCell(new PdfPCell(new Phrase(stt.ToString(), fontTableCell)) { HorizontalAlignment = Element.ALIGN_CENTER });
+                    table.AddCell(new PdfPCell(new Phrase(trainee.ma_dk, fontTableCell)));
+                    table.AddCell(new PdfPCell(new Phrase(trainee.ho_va_ten, fontTableCell)));
+                    string ngaySinh = trainee.ngay_sinh.Substring(8, 2) + "/" +
+                                      trainee.ngay_sinh.Substring(5, 2) + "/" +
+                                      trainee.ngay_sinh.Substring(0, 4);
+                    table.AddCell(new PdfPCell(new Phrase(ngaySinh, fontTableCell)) { HorizontalAlignment = Element.ALIGN_CENTER });
+                    table.AddCell(new PdfPCell(new Phrase(trainee.hang_daotao, fontTableCell)) { HorizontalAlignment = Element.ALIGN_CENTER });
+
+                    string timeTraining = $"{(trainee.outdoor_hour / 3600)}:{(trainee.outdoor_hour % 3600) / 60}";
+                    table.AddCell(new PdfPCell(new Phrase(timeTraining, fontTableCell)) { HorizontalAlignment = Element.ALIGN_CENTER });
+
+                    string distance = (trainee.outdoor_distance / 1000.0).ToString("0.###");
+                    table.AddCell(new PdfPCell(new Phrase(distance, fontTableCell)) { HorizontalAlignment = Element.ALIGN_CENTER });
+
+                    string autoTime = $"{(trainee.auto_duration / 3600)}:{(trainee.auto_duration % 3600) / 60}";
+                    table.AddCell(new PdfPCell(new Phrase(autoTime, fontTableCell)) { HorizontalAlignment = Element.ALIGN_CENTER });
+
+                    string nightTime = $"{(trainee.night_duration / 3600)}:{(trainee.night_duration % 3600) / 60}";
+                    table.AddCell(new PdfPCell(new Phrase(nightTime, fontTableCell)) { HorizontalAlignment = Element.ALIGN_CENTER });
+
+                    stt++;
+                }
+
+                document.Add(table);
+
+                // Footer
+                PdfPTable tableFooter = new PdfPTable(1);
+                tableFooter.TotalWidth = 200;
+                tableFooter.LockedWidth = true;
+                tableFooter.HorizontalAlignment = Element.ALIGN_RIGHT;
+
+                PdfPCell cell = new PdfPCell();
+                cell.Border = iTextSharp.text.Rectangle.NO_BORDER;
+                cell.PaddingTop = 20;
+
+                Paragraph p = new Paragraph("Trưởng phòng đào tạo\n(ký tên)", fontHeader);
+                p.Alignment = Element.ALIGN_CENTER;
+                cell.AddElement(p);
+
+                tableFooter.AddCell(cell);
+
+                document.Add(tableFooter);
+
+
+
+
+                document.Close();
+                MessageBox.Show($"PDF đã được tạo: {filePDF}");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Lỗi xuất PDF: " + ex.Message);
+            }
         }
 
         private void CreatFileExcelReportSession_FromExcel(string fileName, string sThongTinFile, List<InforSessionReport> LstTmp)
@@ -3344,65 +3496,167 @@ namespace DAT_ToolReports
 
         }
 
+
+        //private void btnOpenExcel_Click(object sender, EventArgs e)
+        //{
+        //    //Form3 f3 = new Form3();//mo form duyet excel cua Bo
+        //    //f3.ShowDialog();
+
+        //    //mo excel cua csdt
+
+        //    if (!bLogined)
+        //    {
+        //        MessageBox.Show("Bạn chưa đăng nhập");
+        //        return;
+        //    }
+        //    OpenFileDialog openFileDialog1 = new OpenFileDialog
+        //    {
+        //        InitialDirectory = @"D:\",
+        //        Title = "Browse Excel Files",
+
+        //        CheckFileExists = true,
+        //        CheckPathExists = true,
+
+        //        DefaultExt = "xlsx",
+        //        Filter = "xlsx files (*.xlsx)|*.xlsx|xls files (*.xls)|*.xls",
+        //        FilterIndex = 1,
+        //        RestoreDirectory = true,
+
+        //        ReadOnlyChecked = true,
+        //        ShowReadOnly = true
+        //    };
+        //    if (openFileDialog1.ShowDialog() == DialogResult.OK)
+        //    {
+        //        txtLogs.Text = "";
+        //        Cursor.Current = Cursors.WaitCursor;
+        //        HocVienExcels.Clear();
+
+        //        Microsoft.Office.Interop.Excel.Application excelApplication;
+        //        excelApplication = new Microsoft.Office.Interop.Excel.Application();
+        //        excelApplication.Visible = false;
+        //        //string fileName = "C:\\sampleExcelFile.xlsx";
+
+        //        //open the workbook
+        //        string FileBaoCaoName = Path.GetFileNameWithoutExtension(openFileDialog1.FileName);
+        //        Microsoft.Office.Interop.Excel.Workbook workbook = (Microsoft.Office.Interop.Excel.Workbook)excelApplication.Workbooks.Open(openFileDialog1.FileName,
+        //            Type.Missing, Type.Missing, Type.Missing, Type.Missing,
+        //            Type.Missing, Type.Missing, Type.Missing, Type.Missing,
+        //            Type.Missing, Type.Missing, Type.Missing, Type.Missing,
+        //            Type.Missing, Type.Missing);
+        //        Microsoft.Office.Interop.Excel.Worksheet worksheet = (Microsoft.Office.Interop.Excel.Worksheet)workbook.Worksheets[1];
+        //        Microsoft.Office.Interop.Excel.Range excelRange = worksheet.UsedRange;
+
+        //        //get an object array of all of the cells in the worksheet (their values)
+        //        object[,] valueArray = (object[,])excelRange.get_Value(
+        //                    XlRangeValueDataType.xlRangeValueDefault);
+
+        //        //access the cells
+        //        string format = "dd-MM-yyyy HH:mm:ss";
+        //        for (int row = 2; row <= worksheet.UsedRange.Rows.Count; ++row)
+        //        {
+        //            if (row == 194)
+        //                row = 194;
+        //            HocVienExcel items = new HocVienExcel();
+        //            if (valueArray[row, 1] is null)
+        //                break;
+        //            items.STT = Int32.Parse(valueArray[row, 1].ToString());
+        //            if (items.STT != (row - 1))
+        //                break;
+        //            items.MaDangKy = valueArray[row, 2].ToString();
+        //            items.HoVaTen = valueArray[row, 3].ToString();
+
+        //            HocVienExcels.Add(items);
+        //            //for (int col = 1; col <= worksheet.UsedRange.Columns.Count; ++col)
+        //            //{
+        //            //    //access each cell
+        //            //    MessageBox.Show(valueArray[row, col].ToString());
+        //            //}
+        //        }
+
+        //        //clean up stuffs
+        //        workbook.Close(false, Type.Missing, Type.Missing);
+        //        Marshal.ReleaseComObject(workbook);
+
+        //        excelApplication.Quit();
+        //        Marshal.FinalReleaseComObject(excelApplication);
+        //        //HocVienExcels = HocVienExcels.OrderBy(item => item.MaHocVien).ThenBy(item => item.ThoiGianPhienHoc).ToList();
+        //        MessageBox.Show("Open excel so hoc vien: " + HocVienExcels.Count.ToString());
+
+        //        dgwTrainees.Rows.Clear();
+        //        IRestRequest request;
+        //        IRestResponse<ResultTraineeRes> response;
+        //        List<TraineeRes> lisTrainees = new List<TraineeRes>();
+        //        for (int k = 0; k < HocVienExcels.Count; k++)
+        //        {
+        //            //if ((k % 100) == 0) 
+        //            //    txtLogs.Text = ""; //reset
+        //            txtLogs.AppendText(k.ToString() + "-");// + HocVienExcels.Count.ToString() + "__");
+        //            //request = new RestRequest("/trainees", Method.GET).AddQueryParameter("name", "17005-20230804145808700").AddParameter("page_size", 50);
+        //            request = new RestRequest("/trainees", Method.GET).AddQueryParameter("name", HocVienExcels[k].MaDangKy).AddParameter("page_size", 50);
+        //            response = client.Get<ResultTraineeRes>(request);
+
+        //            lisTrainees.AddRange(response.Data.items.ToList());
+        //        }
+        //        string ConvertNgaySinh = "";
+        //        //int count = 1;
+        //        foreach (TraineeRes trainee in lisTrainees)
+        //        {
+        //            string STT = HocVienExcels.SingleOrDefault(x => x.MaDangKy == trainee.ma_dk).STT.ToString();
+        //            ConvertNgaySinh = trainee.ngay_sinh.Substring(8, 2) + "/" + trainee.ngay_sinh.Substring(5, 2) + "/" + trainee.ngay_sinh.Substring(0, 4);
+        //            dgwTrainees.Rows.Add(STT, trainee.id.ToString(), trainee.ho_va_ten, ConvertNgaySinh, trainee.synced_outdoor_hours.ToString(), trainee.synced_outdoor_distance.ToString(),
+        //                (trainee.outdoor_hour / 3600).ToString(), (trainee.outdoor_distance / 1000).ToString(), trainee.outdoor_session_count.ToString(), trainee.ma_dk, trainee.anh_chan_dung);
+        //        }
+        //        string fileName = "C:\\Report_DAT\\BaoCaoTuExcel_" + FileBaoCaoName + ".xls";
+        //        CreatFileExcelReportCouse_FromExcel(fileName, FileBaoCaoName, lisTrainees);
+        //        OpenMyExcelFile(fileName);
+        //    }
+        //}
+
         private void btnOpenExcel_Click(object sender, EventArgs e)
         {
-            //Form3 f3 = new Form3();//mo form duyet excel cua Bo
-            //f3.ShowDialog();
-
-            //mo excel cua csdt
-
             if (!bLogined)
             {
                 MessageBox.Show("Bạn chưa đăng nhập");
                 return;
             }
+
             OpenFileDialog openFileDialog1 = new OpenFileDialog
             {
                 InitialDirectory = @"D:\",
                 Title = "Browse Excel Files",
-
                 CheckFileExists = true,
                 CheckPathExists = true,
-
                 DefaultExt = "xlsx",
                 Filter = "xlsx files (*.xlsx)|*.xlsx|xls files (*.xls)|*.xls",
                 FilterIndex = 1,
                 RestoreDirectory = true,
-
                 ReadOnlyChecked = true,
                 ShowReadOnly = true
             };
+
             if (openFileDialog1.ShowDialog() == DialogResult.OK)
             {
                 txtLogs.Text = "";
                 Cursor.Current = Cursors.WaitCursor;
                 HocVienExcels.Clear();
 
-                Microsoft.Office.Interop.Excel.Application excelApplication;
-                excelApplication = new Microsoft.Office.Interop.Excel.Application();
+                // Mở Excel
+                Microsoft.Office.Interop.Excel.Application excelApplication = new Microsoft.Office.Interop.Excel.Application();
                 excelApplication.Visible = false;
-                //string fileName = "C:\\sampleExcelFile.xlsx";
 
-                //open the workbook
                 string FileBaoCaoName = Path.GetFileNameWithoutExtension(openFileDialog1.FileName);
                 Microsoft.Office.Interop.Excel.Workbook workbook = (Microsoft.Office.Interop.Excel.Workbook)excelApplication.Workbooks.Open(openFileDialog1.FileName,
                     Type.Missing, Type.Missing, Type.Missing, Type.Missing,
                     Type.Missing, Type.Missing, Type.Missing, Type.Missing,
                     Type.Missing, Type.Missing, Type.Missing, Type.Missing,
                     Type.Missing, Type.Missing);
+
                 Microsoft.Office.Interop.Excel.Worksheet worksheet = (Microsoft.Office.Interop.Excel.Worksheet)workbook.Worksheets[1];
-                Microsoft.Office.Interop.Excel.Range excelRange = worksheet.UsedRange;
+                object[,] valueArray = (object[,])worksheet.UsedRange.get_Value(XlRangeValueDataType.xlRangeValueDefault);
 
-                //get an object array of all of the cells in the worksheet (their values)
-                object[,] valueArray = (object[,])excelRange.get_Value(
-                            XlRangeValueDataType.xlRangeValueDefault);
-
-                //access the cells
-                string format = "dd-MM-yyyy HH:mm:ss";
+                // Đọc dữ liệu từ Excel
                 for (int row = 2; row <= worksheet.UsedRange.Rows.Count; ++row)
                 {
-                    if (row == 194)
-                        row = 194;
                     HocVienExcel items = new HocVienExcel();
                     if (valueArray[row, 1] is null)
                         break;
@@ -3413,51 +3667,49 @@ namespace DAT_ToolReports
                     items.HoVaTen = valueArray[row, 3].ToString();
 
                     HocVienExcels.Add(items);
-                    //for (int col = 1; col <= worksheet.UsedRange.Columns.Count; ++col)
-                    //{
-                    //    //access each cell
-                    //    MessageBox.Show(valueArray[row, col].ToString());
-                    //}
                 }
 
-                //clean up stuffs
+                // Clean up Excel
                 workbook.Close(false, Type.Missing, Type.Missing);
                 Marshal.ReleaseComObject(workbook);
-
                 excelApplication.Quit();
                 Marshal.FinalReleaseComObject(excelApplication);
-                //HocVienExcels = HocVienExcels.OrderBy(item => item.MaHocVien).ThenBy(item => item.ThoiGianPhienHoc).ToList();
+
                 MessageBox.Show("Open excel so hoc vien: " + HocVienExcels.Count.ToString());
 
+                // Lấy dữ liệu từ API
                 dgwTrainees.Rows.Clear();
-                IRestRequest request;
-                IRestResponse<ResultTraineeRes> response;
                 List<TraineeRes> lisTrainees = new List<TraineeRes>();
                 for (int k = 0; k < HocVienExcels.Count; k++)
                 {
-                    //if ((k % 100) == 0) 
-                    //    txtLogs.Text = ""; //reset
-                    txtLogs.AppendText(k.ToString() + "-");// + HocVienExcels.Count.ToString() + "__");
-                    //request = new RestRequest("/trainees", Method.GET).AddQueryParameter("name", "17005-20230804145808700").AddParameter("page_size", 50);
-                    request = new RestRequest("/trainees", Method.GET).AddQueryParameter("name", HocVienExcels[k].MaDangKy).AddParameter("page_size", 50);
-                    response = client.Get<ResultTraineeRes>(request);
-
+                    txtLogs.AppendText(k.ToString() + "-");
+                    IRestRequest request = new RestRequest("/trainees", Method.GET)
+                        .AddQueryParameter("name", HocVienExcels[k].MaDangKy)
+                        .AddParameter("page_size", 50);
+                    IRestResponse<ResultTraineeRes> response = client.Get<ResultTraineeRes>(request);
                     lisTrainees.AddRange(response.Data.items.ToList());
                 }
-                string ConvertNgaySinh = "";
-                //int count = 1;
+
+                // Hiển thị vào DataGridView
                 foreach (TraineeRes trainee in lisTrainees)
                 {
                     string STT = HocVienExcels.SingleOrDefault(x => x.MaDangKy == trainee.ma_dk).STT.ToString();
-                    ConvertNgaySinh = trainee.ngay_sinh.Substring(8, 2) + "/" + trainee.ngay_sinh.Substring(5, 2) + "/" + trainee.ngay_sinh.Substring(0, 4);
-                    dgwTrainees.Rows.Add(STT, trainee.id.ToString(), trainee.ho_va_ten, ConvertNgaySinh, trainee.synced_outdoor_hours.ToString(), trainee.synced_outdoor_distance.ToString(),
-                        (trainee.outdoor_hour / 3600).ToString(), (trainee.outdoor_distance / 1000).ToString(), trainee.outdoor_session_count.ToString(), trainee.ma_dk, trainee.anh_chan_dung);
+                    string ConvertNgaySinh = trainee.ngay_sinh.Substring(8, 2) + "/" + trainee.ngay_sinh.Substring(5, 2) + "/" + trainee.ngay_sinh.Substring(0, 4);
+                    dgwTrainees.Rows.Add(STT, trainee.id.ToString(), trainee.ho_va_ten, ConvertNgaySinh,
+                        trainee.synced_outdoor_hours.ToString(), trainee.synced_outdoor_distance.ToString(),
+                        (trainee.outdoor_hour / 3600).ToString(), (trainee.outdoor_distance / 1000).ToString(),
+                        trainee.outdoor_session_count.ToString(), trainee.ma_dk, trainee.anh_chan_dung);
                 }
-                string fileName = "C:\\Report_DAT\\BaoCaoTuExcel_" + FileBaoCaoName + ".xls";
-                CreatFileExcelReportCouse_FromExcel(fileName, FileBaoCaoName, lisTrainees);
-                OpenMyExcelFile(fileName);
+
+                // ----- Xuất PDF -----
+                string filePDF = "C:\\Report_DAT\\BaoCaoTuExcel_" + FileBaoCaoName + ".pdf";
+                CreatFilePdfReportSession_FromExcel(filePDF, FileBaoCaoName, lisTrainees);
+
+                Cursor.Current = Cursors.Default;
             }
         }
+
+
         private void xemDanhSáchPhiênHọcToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (accessToken == "")
