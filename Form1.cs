@@ -1103,21 +1103,58 @@ namespace DAT_ToolReports
                 reportDate.SpacingAfter = 10;
                 document.Add(reportDate);
 
+                // Section I: Thông tin học viên + ảnh
                 Paragraph sectionI = new Paragraph("I. Thông tin học viên", fontHeader);
                 sectionI.Alignment = Element.ALIGN_LEFT;
                 sectionI.SpacingAfter = 5;
                 document.Add(sectionI);
 
+                // Table 2 cột: cột trái info, cột phải ảnh
+                PdfPTable infoTable = new PdfPTable(2);
+                infoTable.WidthPercentage = 100;
+                infoTable.SetWidths(new float[] { 70f, 30f }); // 70% thông tin, 30% ảnh
+
+                // Cột thông tin
+                PdfPCell infoCell = new PdfPCell();
+                infoCell.Border = PdfPCell.NO_BORDER;
+
                 iTextSharp.text.List infoList = new iTextSharp.text.List(iTextSharp.text.List.ORDERED);
-
-
                 infoList.Add(new ListItem($"Họ và tên: {TraineeName}", fontTableCell));
                 infoList.Add(new ListItem($"Mã học viên: {MaDK}", fontTableCell));
                 infoList.Add(new ListItem($"Ngày sinh: {NgaySinh}", fontTableCell));
                 infoList.Add(new ListItem($"Hạng đào tạo: {HangDT}", fontTableCell));
                 infoList.Add(new ListItem($"Khóa học: {KhoaHoc}", fontTableCell));
                 infoList.Add(new ListItem($"Cơ sở đào tạo: {DAT_ToolReports.Properties.Settings.Default.Centre}", fontTableCell));
-                document.Add(infoList);
+
+                infoCell.AddElement(infoList);
+                infoTable.AddCell(infoCell);
+
+                // Cột ảnh học viên
+                PdfPCell photoCell = new PdfPCell();
+                photoCell.Border = PdfPCell.NO_BORDER;
+                photoCell.HorizontalAlignment = Element.ALIGN_CENTER;
+                photoCell.VerticalAlignment = Element.ALIGN_MIDDLE;
+
+                // Sử dụng đường dẫn ảnh đã tải về trước đó
+                string pathToPhoto = fileNameImage; // fileNameImage đã được xác định trong xuấtRaFileToolStripMenuItemPdf_Click
+                if (File.Exists(pathToPhoto))
+                {
+                    iTextSharp.text.Image traineeImage = iTextSharp.text.Image.GetInstance(pathToPhoto);
+                    traineeImage.ScaleToFit(120f, 120f);
+                    traineeImage.Alignment = Element.ALIGN_CENTER;
+                    photoCell.AddElement(traineeImage);
+                }
+                else
+                {
+                    // Nếu ảnh không tồn tại, có thể thêm placeholder text
+                    photoCell.AddElement(new Paragraph("Chưa có ảnh", fontTableCell) { Alignment = Element.ALIGN_CENTER });
+                }
+
+                infoTable.AddCell(photoCell);
+
+                // Thêm bảng infoTable vào document
+                document.Add(infoTable);
+
 
                 // Section II
                 Paragraph sectionII = new Paragraph("II. Thông tin quá trình đào tạo", fontHeader);
@@ -1383,7 +1420,7 @@ namespace DAT_ToolReports
                 Cells[row, 2].SetStyle(style5);
                 Cells[row + 1, 0].Value = "Đơn vị truyền dữ liệu:";
                 Cells[row + 1, 0].SetStyle(style5);
-                Cells[row + 1, 2].Value = "Công ty CP Công nghệ Sát hạch Toàn Phương";
+                Cells[row + 1, 2].Value = "CTY TNHH ĐÀO TẠO LÁI XE ĐỒNG BẰNG";
                 Cells[row + 1, 2].SetStyle(style5);
                 Cells[row + 2, 0].Value = "Khóa học:";
                 Cells[row + 2, 0].SetStyle(style5);
@@ -3178,7 +3215,7 @@ namespace DAT_ToolReports
                 cellLeft.Border = PdfPCell.NO_BORDER;
                 cellLeft.HorizontalAlignment = Element.ALIGN_CENTER; // căn giữa trong cột
                 cellLeft.VerticalAlignment = Element.ALIGN_TOP;
-                cellLeft.AddElement(new Paragraph("CTY CP CÔNG NGHỆ SÁT HẠCH TOÀN PHƯƠNG", fontHeader) { Alignment = Element.ALIGN_CENTER });
+                cellLeft.AddElement(new Paragraph("CTY TNHH ĐÀO TẠO LÁI XE ĐỒNG BẰNG", fontHeader) { Alignment = Element.ALIGN_CENTER });
                 cellLeft.AddElement(new Paragraph("TRUNG TÂM ĐT VÀ SHLX VIỆT THANH", fontHeader) { Alignment = Element.ALIGN_CENTER });
                 cellLeft.AddElement(new Paragraph("***********", fontHeaderItalic) { Alignment = Element.ALIGN_CENTER });
 
@@ -3503,7 +3540,7 @@ namespace DAT_ToolReports
                     Cells[row, 11].Value = LstTmp[i].HangXeTL;
                     Cells[row, 12].Value = DAT_ToolReports.Properties.Settings.Default.Company;
                     Cells[row, 13].Value = DAT_ToolReports.Properties.Settings.Default.Centre;
-                    Cells[row, 14].Value = "Công ty CP Công Nghệ Sát Hạch Toàn Phương";
+                    Cells[row, 14].Value = "CTY TNHH ĐÀO TẠO LÁI XE ĐỒNG BẰNG";
 
 
                     Cells[row, 0].SetStyle(style4);
