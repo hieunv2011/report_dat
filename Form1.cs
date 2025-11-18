@@ -1047,6 +1047,203 @@ namespace DAT_ToolReports
             Cursor.Current = Cursors.Default;
         }
 
+        //Create PDF Report Trainees
+        private void CreatFilePdfReport(string filePDF, string TraineeName, string MaDK, string NgaySinh, string HangDT, string KhoaHoc, List<SessionRes> sessions)
+        {
+            try
+            {
+                // Landscape
+                Document document = new Document(PageSize.A4.Rotate(), 40, 40, 40, 40);
+                PdfWriter.GetInstance(document, new FileStream(filePDF, FileMode.Create));
+                document.Open();
+
+                System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
+                string fontPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), @"Fonts\times.ttf");
+                BaseFont bf = BaseFont.CreateFont(fontPath, BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
+
+                iTextSharp.text.Font fontHeader = new iTextSharp.text.Font(bf, 13, iTextSharp.text.Font.BOLD);
+                iTextSharp.text.Font fontHeaderItalic = new iTextSharp.text.Font(bf, 13, iTextSharp.text.Font.ITALIC);
+                iTextSharp.text.Font fontTitle = new iTextSharp.text.Font(bf, 15, iTextSharp.text.Font.BOLD);
+                iTextSharp.text.Font fontTableHeader = new iTextSharp.text.Font(bf, 13, iTextSharp.text.Font.BOLD);
+                iTextSharp.text.Font fontTableCell = new iTextSharp.text.Font(bf, 12, iTextSharp.text.Font.NORMAL);
+
+                // ----- Header báo cáo -----
+                PdfPTable headerTable = new PdfPTable(2);
+                headerTable.WidthPercentage = 100;
+                headerTable.SetWidths(new float[] { 50f, 50f });
+
+                PdfPCell cellLeft = new PdfPCell();
+                cellLeft.Border = PdfPCell.NO_BORDER;
+                cellLeft.HorizontalAlignment = Element.ALIGN_CENTER;
+                cellLeft.VerticalAlignment = Element.ALIGN_TOP;
+                cellLeft.AddElement(new Paragraph(DAT_ToolReports.Properties.Settings.Default.Company.ToUpper(), fontHeader) { Alignment = Element.ALIGN_CENTER });
+                cellLeft.AddElement(new Paragraph(DAT_ToolReports.Properties.Settings.Default.Centre.ToUpper(), fontHeader) { Alignment = Element.ALIGN_CENTER });
+                cellLeft.AddElement(new Paragraph("***********", fontHeaderItalic) { Alignment = Element.ALIGN_CENTER });
+
+                PdfPCell cellRight = new PdfPCell();
+                cellRight.Border = PdfPCell.NO_BORDER;
+                cellRight.HorizontalAlignment = Element.ALIGN_CENTER;
+                cellRight.VerticalAlignment = Element.ALIGN_TOP;
+                cellRight.AddElement(new Paragraph("CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM", fontHeader) { Alignment = Element.ALIGN_CENTER });
+                cellRight.AddElement(new Paragraph("Độc lập - Tự do - Hạnh phúc", fontHeaderItalic) { Alignment = Element.ALIGN_CENTER });
+                cellRight.AddElement(new Paragraph("***********", fontHeaderItalic) { Alignment = Element.ALIGN_CENTER });
+
+                headerTable.AddCell(cellLeft);
+                headerTable.AddCell(cellRight);
+                document.Add(headerTable);
+
+                // Title
+                Paragraph title = new Paragraph("BÁO CÁO QUÁ TRÌNH ĐÀO TẠO CỦA HỌC VIÊN THỰC HÀNH LÁI XE TRÊN ĐƯỜNG\nCỦA KHOÁ HỌC", fontTitle);
+                title.Alignment = Element.ALIGN_CENTER;
+                title.SpacingBefore = 10;
+                document.Add(title);
+
+                Paragraph reportDate = new Paragraph($"(Ngày báo cáo: ngày {DateTime.Now.Day} tháng {DateTime.Now.Month} năm {DateTime.Now.Year})", fontHeaderItalic);
+                reportDate.Alignment = Element.ALIGN_CENTER;
+                reportDate.SpacingAfter = 10;
+                document.Add(reportDate);
+
+                Paragraph sectionI = new Paragraph("I. Thông tin học viên", fontHeader);
+                sectionI.Alignment = Element.ALIGN_LEFT;
+                sectionI.SpacingAfter = 5;
+                document.Add(sectionI);
+
+                iTextSharp.text.List infoList = new iTextSharp.text.List(iTextSharp.text.List.ORDERED);
+
+
+                infoList.Add(new ListItem($"Họ và tên: {TraineeName}", fontTableCell));
+                infoList.Add(new ListItem($"Mã học viên: {MaDK}", fontTableCell));
+                infoList.Add(new ListItem($"Ngày sinh: {NgaySinh}", fontTableCell));
+                infoList.Add(new ListItem($"Hạng đào tạo: {HangDT}", fontTableCell));
+                infoList.Add(new ListItem($"Khóa học: {KhoaHoc}", fontTableCell));
+                infoList.Add(new ListItem($"Cơ sở đào tạo: {DAT_ToolReports.Properties.Settings.Default.Centre}", fontTableCell));
+                document.Add(infoList);
+
+                // Section II
+                Paragraph sectionII = new Paragraph("II. Thông tin quá trình đào tạo", fontHeader);
+                sectionII.Alignment = Element.ALIGN_CENTER;
+                sectionII.SpacingAfter = 5;
+                document.Add(sectionII);
+
+                // ----- Bảng dữ liệu -----
+                PdfPTable table = new PdfPTable(9);
+                table.WidthPercentage = 100;
+                table.SetWidths(new float[] { 3f, 10f, 10f, 8f, 10f, 10f, 8f, 8f, 8f });
+
+                string[] cols = { "STT", "Phiên đào tạo", "Biển số xe tập lái", "Hạng xe tập lái", "Bắt đầu", "Kết thúc", "Thời gian đào tạo", "Số giờ đêm", "Quãng đường đào tạo" };
+                foreach (var col in cols)
+                {
+                    PdfPCell cell2 = new PdfPCell(new Phrase(col, fontTableHeader));
+                    cell2.HorizontalAlignment = Element.ALIGN_CENTER;
+                    cell2.BackgroundColor = BaseColor.WHITE;
+                    table.AddCell(cell2);
+                }
+
+                int stt = 1;
+                double totalTime = 0;
+                double totalDistance = 0;
+                double totalNightTime = 0;
+                double totalAutoTime = 0;
+
+                foreach (var session in sessions)
+                {
+                    table.AddCell(new PdfPCell(new Phrase(stt.ToString(), fontTableCell)) { HorizontalAlignment = Element.ALIGN_CENTER });
+                    table.AddCell(new PdfPCell(new Phrase(session.session_id, fontTableCell)));
+                    table.AddCell(new PdfPCell(new Phrase(session.vehicle_plate, fontTableCell)));
+                    table.AddCell(new PdfPCell(new Phrase(string.IsNullOrEmpty(session.vehicle_hang) ? HangDT : session.vehicle_hang, fontTableCell)) { HorizontalAlignment = Element.ALIGN_CENTER });
+
+                    DateTime startTime = DateTime.ParseExact(session.start_time.Substring(0, 19).Replace('T', ' '), "yyyy-MM-dd HH:mm:ss", System.Globalization.CultureInfo.InvariantCulture);
+                    DateTime endTime = startTime.AddSeconds(Convert.ToDouble(session.duration));
+
+                    table.AddCell(new PdfPCell(new Phrase(startTime.ToString("dd/MM/yyyy HH:mm:ss"), fontTableCell)));
+                    table.AddCell(new PdfPCell(new Phrase(endTime.ToString("dd/MM/yyyy HH:mm:ss"), fontTableCell)));
+
+                    string trainingTime = $"{session.duration / 3600}:{(session.duration % 3600) / 60:D2}";
+                    table.AddCell(new PdfPCell(new Phrase(trainingTime, fontTableCell)) { HorizontalAlignment = Element.ALIGN_CENTER });
+
+                    // Giờ đêm
+                    int nightTime = 0; // giữ logic tính giờ đêm nếu cần
+                    string nightTimeStr = $"{nightTime / 3600}:{(nightTime % 3600) / 60:D2}";
+                    table.AddCell(new PdfPCell(new Phrase(nightTimeStr, fontTableCell)) { HorizontalAlignment = Element.ALIGN_CENTER });
+
+                    string distance = ((session.distance ?? 0) / 1000.0).ToString("0.###");
+                    table.AddCell(new PdfPCell(new Phrase(distance, fontTableCell)) { HorizontalAlignment = Element.ALIGN_CENTER });
+
+                    totalTime += Convert.ToDouble(session.duration);
+                    totalDistance += Convert.ToDouble(session.distance ?? 0);
+                    totalNightTime += nightTime;
+                    stt++;
+                }
+
+                // Hàng tổng
+                PdfPCell totalCell = new PdfPCell(new Phrase("Tổng", fontTableHeader)) { Colspan = 6, HorizontalAlignment = Element.ALIGN_CENTER };
+                table.AddCell(totalCell);
+
+                string totalTimeStr = $"{(int)totalTime / 3600}:{((int)totalTime % 3600) / 60:D2}";
+                table.AddCell(new PdfPCell(new Phrase(totalTimeStr, fontTableHeader)) { HorizontalAlignment = Element.ALIGN_CENTER });
+
+                string totalNightStr = $"{(int)totalNightTime / 3600}:{((int)totalNightTime % 3600) / 60:D2}";
+                table.AddCell(new PdfPCell(new Phrase(totalNightStr, fontTableHeader)) { HorizontalAlignment = Element.ALIGN_CENTER });
+
+                string totalDistanceStr = (totalDistance / 1000.0).ToString("0.###");
+                table.AddCell(new PdfPCell(new Phrase(totalDistanceStr, fontTableHeader)) { HorizontalAlignment = Element.ALIGN_CENTER });
+
+                document.Add(table);
+
+                /// Footer tổng hợp
+                PdfPTable tableFooter = new PdfPTable(1); // 1 cột để căn phải cả cụm
+                tableFooter.WidthPercentage = 100;
+
+                string[] resultLabels = { "Quãng đường đào tạo", "Thời gian đào tạo", "Số giờ đêm", "Số giờ tự động" };
+                string[] resultValues = {
+    (totalDistance / 1000).ToString("0.##"),
+    $"{((int)(totalTime / 3600))}:{((int)((totalTime % 3600)/60)):00}",
+    $"{((int)(totalNightTime / 3600))}:{((int)((totalNightTime % 3600)/60)):00}",
+    $"{((int)(totalAutoTime / 3600))}:{((int)((totalAutoTime % 3600)/60)):00}"
+};
+
+                for (int i = 0; i < resultLabels.Length; i++)
+                {
+                    PdfPCell cell = new PdfPCell(new Phrase($"{resultLabels[i]}: {resultValues[i]}", fontTableCell));
+                    cell.Border = PdfPCell.NO_BORDER;
+                    cell.HorizontalAlignment = Element.ALIGN_RIGHT;
+                    tableFooter.AddCell(cell);
+                }
+
+                document.Add(tableFooter);
+
+                PdfPTable signatureGroup = new PdfPTable(1);
+                signatureGroup.TotalWidth = 250f;
+                signatureGroup.LockedWidth = true;
+                signatureGroup.HorizontalAlignment = Element.ALIGN_RIGHT;
+                signatureGroup.DefaultCell.Border = PdfPCell.NO_BORDER;
+
+                PdfPCell dateCell = new PdfPCell(new Phrase(
+                    $"{DAT_ToolReports.Properties.Settings.Default.Province}, ngày {DateTime.Now.Day} tháng {DateTime.Now.Month} năm {DateTime.Now.Year}",
+                    fontTableCell));
+                dateCell.Border = PdfPCell.NO_BORDER;
+                dateCell.HorizontalAlignment = Element.ALIGN_CENTER;
+                dateCell.PaddingBottom = 5f;
+                signatureGroup.AddCell(dateCell);
+
+                PdfPCell signatureCell = new PdfPCell(new Phrase("Chữ ký học viên", fontTableHeader));
+                signatureCell.Border = PdfPCell.NO_BORDER;
+                signatureCell.HorizontalAlignment = Element.ALIGN_CENTER;
+                signatureGroup.AddCell(signatureCell);
+
+                document.Add(signatureGroup);
+
+
+
+                document.Close();
+                MessageBox.Show($"PDF đã được tạo: {filePDF}");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Lỗi xuất PDF: " + ex.Message);
+            }
+        }
+
         private void CreatFileExcelReportCouseSession(string fileName, string HangDT, string KhoaHoc, List<SessionRes> LstTmp)
         {
             try
@@ -1518,6 +1715,118 @@ namespace DAT_ToolReports
                     session.faceid_success_count.ToString() + "/" + (session.faceid_failed_count + session.faceid_success_count).ToString(), session.synced.ToString(), ViPham);
             }
             OpenMyExcelFile(fileName);
+        }
+
+        private void xuấtRaFileToolStripMenuItemPdf_Click(object sender, EventArgs e)
+        {
+            // Lấy danh sách sessions
+            if (chkbDongBo.Checked)
+            {
+                var request2 = new RestRequest("/outdoor-sessions", Method.GET)
+                    .AddQueryParameter("trainee_id", dgwTrainees.CurrentRow.Cells[1].Value.ToString())
+                    .AddParameter("page_size", 500)
+                    .AddParameter("synced", 1)
+                    .AddQueryParameter("status", "2");
+                var response2 = client.Get<ResultSessionRes>(request2);
+                sTraineeID = dgwTrainees.CurrentRow.Cells[1].Value.ToString();
+                Sessions = JsonConvert.DeserializeObject<List<SessionRes>>(response2.Content);
+            }
+            else
+            {
+                var request3 = new RestRequest("/outdoor-sessions", Method.GET)
+                    .AddQueryParameter("trainee_id", dgwTrainees.CurrentRow.Cells[1].Value.ToString())
+                    .AddQueryParameter("status", "2")
+                    .AddParameter("page_size", 500);
+                var response3 = client.Get<ResultSessionRes>(request3);
+                sTraineeID = dgwTrainees.CurrentRow.Cells[1].Value.ToString();
+                Sessions = JsonConvert.DeserializeObject<List<SessionRes>>(response3.Content);
+            }
+
+            // Tải ảnh
+            WebClient webClient = new WebClient();
+            string LinkFile = "";
+            int row = dgwTrainees.CurrentRow.Index;
+            if (dgwTrainees[10, row].Value is null)
+                LinkFile = "NULL";
+            else
+                LinkFile = dgwTrainees[10, row].Value.ToString();
+
+            if (LinkFile.Length > 5)
+            {
+                fileNameImage = "C:\\Report_DAT\\" + dgwTrainees[1, row].Value.ToString() + ".jpg";
+                try
+                {
+                    webClient.DownloadFile(LinkFile, fileNameImage);
+                }
+                catch (Exception)
+                {
+                    fileNameImage = "C:\\Report_DAT\\1234.jpg";
+                }
+            }
+            else
+            {
+                fileNameImage = "C:\\Report_DAT\\1234.jpg";
+            }
+
+            if (!System.IO.File.Exists(fileNameImage))
+            {
+                Bitmap bmp = DrawFilledRectangle(680, 480);
+                bmp.Save(fileNameImage, ImageFormat.Jpeg);
+            }
+
+            // Tạo file PDF
+            string fileName = "C:\\Report_DAT\\" + dgwTrainees[1, row].Value.ToString() + ".pdf";
+            CreatFilePdfReport(fileName,
+                dgwTrainees.CurrentRow.Cells[2].Value.ToString(),
+                dgwTrainees.CurrentRow.Cells[9].Value.ToString(),
+                dgwTrainees.CurrentRow.Cells[3].Value.ToString(),
+                HangDaoTao, TenKhoaHoc, Sessions);
+
+            // Xóa bảng cũ
+            dgvSessions.Rows.Clear();
+            DateTime StartTime;
+            string ViPham = "";
+            bool GetAll = !(chkNonCheck.Checked || chkCheckOk.Checked || chkCheckNonOk.Checked);
+
+            // Thêm dữ liệu vào dgvSessions
+            foreach (SessionRes session in Sessions)
+            {
+                if (!GetAll && !chkNonCheck.Checked && session.sync_status == 0)
+                    continue;
+                if (!GetAll && !chkCheckNonOk.Checked && session.sync_status < 0)
+                    continue;
+                if (!GetAll && !chkCheckOk.Checked && session.sync_status > 0)
+                    continue;
+
+                StartTime = DateTime.ParseExact(session.start_time.Substring(0, 19).Replace('T', ' '),
+                    "yyyy-MM-dd HH:mm:ss", System.Globalization.CultureInfo.InvariantCulture);
+
+                if (session.sync_status == 0)
+                    ViPham = "Chưa kiểm tra";
+                else if (session.sync_status > 0)
+                    ViPham = "Không vi phạm";
+                else
+                    ViPham = session.sync_error;
+
+                dgvSessions.Rows.Add(
+                    session.session_id,
+                    session.trainee_name,
+                    StartTime.ToShortDateString() + " " + StartTime.ToLongTimeString(),
+                    Truncate(((double)session.duration / 3600), 2).ToString(),
+                    Truncate(((double)session.distance / 1000), 2).ToString(),
+                    session.vehicle_plate,
+                    session.faceid_success_count.ToString() + "/" + (session.faceid_failed_count + session.faceid_success_count).ToString(),
+                    session.synced.ToString(),
+                    ViPham
+                );
+            }
+
+            // Mở PDF bằng trình mặc định
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo()
+            {
+                FileName = fileName,
+                UseShellExecute = true
+            });
         }
 
         private void inBáoCáoToolStripMenuItem_Click(object sender, EventArgs e)

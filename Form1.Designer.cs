@@ -335,10 +335,16 @@
             // 
             // xuấtRaFileToolStripMenuItem
             // 
+            //xuấtRaFileToolStripMenuItem.Name = "xuấtRaFileToolStripMenuItem";
+            //xuấtRaFileToolStripMenuItem.Size = new Size(203, 24);
+            //xuấtRaFileToolStripMenuItem.Text = "Xuất ra file báo cáo HV";
+            //xuấtRaFileToolStripMenuItem.Click += xuấtRaFileToolStripMenuItem_Click;
+            // xuấtRaFileToolStripMenuItemPdf
+            // 
             xuấtRaFileToolStripMenuItem.Name = "xuấtRaFileToolStripMenuItem";
             xuấtRaFileToolStripMenuItem.Size = new Size(203, 24);
-            xuấtRaFileToolStripMenuItem.Text = "Xuất ra file";
-            xuấtRaFileToolStripMenuItem.Click += xuấtRaFileToolStripMenuItem_Click;
+            xuấtRaFileToolStripMenuItem.Text = "Xuất ra file báo cáo HV PDF";
+            xuấtRaFileToolStripMenuItem.Click += xuấtRaFileToolStripMenuItemPdf_Click;
             // 
             // inBáoCáoToolStripMenuItem
             // 
