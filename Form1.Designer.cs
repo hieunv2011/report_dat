@@ -58,6 +58,7 @@
             MenuGetSessions = new ContextMenuStrip(components);
             xemCácPhiênHọcToolStripMenuItem = new ToolStripMenuItem();
             xuấtRaFileToolStripMenuItem = new ToolStripMenuItem();
+            xuấtRaFileToolStripMenuItemPdf = new ToolStripMenuItem();
             inBáoCáoToolStripMenuItem = new ToolStripMenuItem();
             dgvSessions = new DataGridView();
             SessionID = new DataGridViewTextBoxColumn();
@@ -89,6 +90,7 @@
             MenuGetTrainees = new ContextMenuStrip(components);
             xemDanhSáchHọcViênToolStripMenuItem = new ToolStripMenuItem();
             xuấtDanhSáchRaFileToolStripMenuItem = new ToolStripMenuItem();
+            xuấtDanhSáchRaFilePdfToolStripMenuItem = new ToolStripMenuItem();
             inDanhSáchToolStripMenuItem = new ToolStripMenuItem();
             xemDanhSáchPhiênHọcToolStripMenuItem = new ToolStripMenuItem();
             inDanhSáchPhiênHọcToolStripMenuItem = new ToolStripMenuItem();
@@ -322,7 +324,7 @@
             // MenuGetSessions
             // 
             MenuGetSessions.ImageScalingSize = new Size(20, 20);
-            MenuGetSessions.Items.AddRange(new ToolStripItem[] { xemCácPhiênHọcToolStripMenuItem, xuấtRaFileToolStripMenuItem, inBáoCáoToolStripMenuItem });
+            MenuGetSessions.Items.AddRange(new ToolStripItem[] { xemCácPhiênHọcToolStripMenuItem, xuấtRaFileToolStripMenuItem, xuấtRaFileToolStripMenuItemPdf, inBáoCáoToolStripMenuItem });
             MenuGetSessions.Name = "MenuGetSessions";
             MenuGetSessions.Size = new Size(204, 76);
             // 
@@ -335,16 +337,16 @@
             // 
             // xuấtRaFileToolStripMenuItem
             // 
-            //xuấtRaFileToolStripMenuItem.Name = "xuấtRaFileToolStripMenuItem";
-            //xuấtRaFileToolStripMenuItem.Size = new Size(203, 24);
-            //xuấtRaFileToolStripMenuItem.Text = "Xuất ra file báo cáo HV";
-            //xuấtRaFileToolStripMenuItem.Click += xuấtRaFileToolStripMenuItem_Click;
-            // xuấtRaFileToolStripMenuItemPdf
-            // 
             xuấtRaFileToolStripMenuItem.Name = "xuấtRaFileToolStripMenuItem";
             xuấtRaFileToolStripMenuItem.Size = new Size(203, 24);
-            xuấtRaFileToolStripMenuItem.Text = "Xuất ra file báo cáo HV PDF";
-            xuấtRaFileToolStripMenuItem.Click += xuấtRaFileToolStripMenuItemPdf_Click;
+            xuấtRaFileToolStripMenuItem.Text = "Xuất ra file báo cáo HV";
+            xuấtRaFileToolStripMenuItem.Click += xuấtRaFileToolStripMenuItem_Click;
+            // xuấtRaFileToolStripMenuItemPdf
+            // 
+            xuấtRaFileToolStripMenuItemPdf.Name = "xuấtRaFileToolStripMenuItemPdf";
+            xuấtRaFileToolStripMenuItemPdf.Size = new Size(203, 24);
+            xuấtRaFileToolStripMenuItemPdf.Text = "Xuất ra file báo cáo HV PDF";
+            xuấtRaFileToolStripMenuItemPdf.Click += xuấtRaFileToolStripMenuItemPdf_Click;
             // 
             // inBáoCáoToolStripMenuItem
             // 
@@ -571,7 +573,7 @@
             // MenuGetTrainees
             // 
             MenuGetTrainees.ImageScalingSize = new Size(20, 20);
-            MenuGetTrainees.Items.AddRange(new ToolStripItem[] { xemDanhSáchHọcViênToolStripMenuItem, xuấtDanhSáchRaFileToolStripMenuItem, inDanhSáchToolStripMenuItem, xemDanhSáchPhiênHọcToolStripMenuItem, inDanhSáchPhiênHọcToolStripMenuItem });
+            MenuGetTrainees.Items.AddRange(new ToolStripItem[] { xemDanhSáchHọcViênToolStripMenuItem, xuấtDanhSáchRaFileToolStripMenuItem, xuấtDanhSáchRaFilePdfToolStripMenuItem, inDanhSáchToolStripMenuItem, xemDanhSáchPhiênHọcToolStripMenuItem, inDanhSáchPhiênHọcToolStripMenuItem });
             MenuGetTrainees.Name = "MenuGetTrainees";
             MenuGetTrainees.Size = new Size(248, 124);
             // 
@@ -586,8 +588,15 @@
             // 
             xuấtDanhSáchRaFileToolStripMenuItem.Name = "xuấtDanhSáchRaFileToolStripMenuItem";
             xuấtDanhSáchRaFileToolStripMenuItem.Size = new Size(247, 24);
-            xuấtDanhSáchRaFileToolStripMenuItem.Text = "Xuất danh sách HV ra file";
+            xuấtDanhSáchRaFileToolStripMenuItem.Text = "Xuất danh sách HV ra file Excel";
             xuấtDanhSáchRaFileToolStripMenuItem.Click += xuấtDanhSáchRaFileToolStripMenuItem_Click;
+            // 
+            // xuấtDanhSáchRaFilePdfToolStripMenuItem
+            // 
+            xuấtDanhSáchRaFilePdfToolStripMenuItem.Name = "xuấtDanhSáchRaFilePdfToolStripMenuItem";
+            xuấtDanhSáchRaFilePdfToolStripMenuItem.Size = new Size(247, 24);
+            xuấtDanhSáchRaFilePdfToolStripMenuItem.Text = "Xuất danh sách HV ra file PDF";
+            xuấtDanhSáchRaFilePdfToolStripMenuItem.Click += xuấtDanhSáchRaFilePdfToolStripMenuItem_Click;
             // 
             // inDanhSáchToolStripMenuItem
             // 
@@ -723,7 +732,7 @@
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(1510, 821);
             Controls.Add(btnOpenExcelCT);
-            Controls.Add(txtLogs);
+            Controls.Add(txtLogs);  
             Controls.Add(groupBox1);
             Controls.Add(btnOpenExcel);
             Controls.Add(txtFind);
@@ -774,6 +783,7 @@
         private ContextMenuStrip MenuGetSessions;
         private ToolStripMenuItem xemCácPhiênHọcToolStripMenuItem;
         private ToolStripMenuItem xuấtRaFileToolStripMenuItem;
+        private ToolStripMenuItem xuấtRaFileToolStripMenuItemPdf;
         private ToolStripMenuItem inBáoCáoToolStripMenuItem;
         private DataGridView dgvSessions;
         private Label label1;
@@ -807,6 +817,7 @@
         private ContextMenuStrip MenuGetTrainees;
         private ToolStripMenuItem xemDanhSáchHọcViênToolStripMenuItem;
         private ToolStripMenuItem xuấtDanhSáchRaFileToolStripMenuItem;
+        private ToolStripMenuItem xuấtDanhSáchRaFilePdfToolStripMenuItem;
         private ToolStripMenuItem inDanhSáchToolStripMenuItem;
         private Button btnFindTrainee;
         private Button btnFindVehicle;
@@ -838,5 +849,6 @@
         private ToolStripMenuItem inDanhSáchPhiênHọcToolStripMenuItem;
         private TextBox txtLogs;
         private Button btnOpenExcelCT;
+
     }
 }

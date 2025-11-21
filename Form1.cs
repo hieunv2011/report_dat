@@ -1052,8 +1052,7 @@ namespace DAT_ToolReports
         {
             try
             {
-                // Landscape
-                Document document = new Document(PageSize.A4.Rotate(), 40, 40, 40, 40);
+                Document document = new Document(PageSize.A4, 40, 40, 40, 40);
                 PdfWriter.GetInstance(document, new FileStream(filePDF, FileMode.Create));
                 document.Open();
 
@@ -1061,29 +1060,24 @@ namespace DAT_ToolReports
                 string fontPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), @"Fonts\times.ttf");
                 BaseFont bf = BaseFont.CreateFont(fontPath, BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
 
-                iTextSharp.text.Font fontHeader = new iTextSharp.text.Font(bf, 13, iTextSharp.text.Font.BOLD);
-                iTextSharp.text.Font fontHeaderItalic = new iTextSharp.text.Font(bf, 13, iTextSharp.text.Font.ITALIC);
-                iTextSharp.text.Font fontTitle = new iTextSharp.text.Font(bf, 15, iTextSharp.text.Font.BOLD);
-                iTextSharp.text.Font fontTableHeader = new iTextSharp.text.Font(bf, 13, iTextSharp.text.Font.BOLD);
-                iTextSharp.text.Font fontTableCell = new iTextSharp.text.Font(bf, 12, iTextSharp.text.Font.NORMAL);
+                iTextSharp.text.Font fontHeader = new iTextSharp.text.Font(bf, 12, iTextSharp.text.Font.BOLD);
+                iTextSharp.text.Font fontHeaderItalic = new iTextSharp.text.Font(bf, 12, iTextSharp.text.Font.ITALIC);
+                iTextSharp.text.Font fontTitle = new iTextSharp.text.Font(bf, 12, iTextSharp.text.Font.BOLD);
+                iTextSharp.text.Font fontTableHeader = new iTextSharp.text.Font(bf, 8, iTextSharp.text.Font.BOLD);
+                iTextSharp.text.Font fontTableCell = new iTextSharp.text.Font(bf, 8, iTextSharp.text.Font.NORMAL);
+                iTextSharp.text.Font fontInfoCell = new iTextSharp.text.Font(bf, 12, iTextSharp.text.Font.NORMAL);
+                iTextSharp.text.Font fontSigCell = new iTextSharp.text.Font(bf, 12, iTextSharp.text.Font.NORMAL);
 
-                // ----- Header báo cáo -----
-                PdfPTable headerTable = new PdfPTable(2);
-                headerTable.WidthPercentage = 100;
+                // Header
+                PdfPTable headerTable = new PdfPTable(2) { WidthPercentage = 100 };
                 headerTable.SetWidths(new float[] { 50f, 50f });
 
-                PdfPCell cellLeft = new PdfPCell();
-                cellLeft.Border = PdfPCell.NO_BORDER;
-                cellLeft.HorizontalAlignment = Element.ALIGN_CENTER;
-                cellLeft.VerticalAlignment = Element.ALIGN_TOP;
+                PdfPCell cellLeft = new PdfPCell { Border = PdfPCell.NO_BORDER, HorizontalAlignment = Element.ALIGN_CENTER, VerticalAlignment = Element.ALIGN_TOP };
                 cellLeft.AddElement(new Paragraph(DAT_ToolReports.Properties.Settings.Default.Company.ToUpper(), fontHeader) { Alignment = Element.ALIGN_CENTER });
                 cellLeft.AddElement(new Paragraph(DAT_ToolReports.Properties.Settings.Default.Centre.ToUpper(), fontHeader) { Alignment = Element.ALIGN_CENTER });
                 cellLeft.AddElement(new Paragraph("***********", fontHeaderItalic) { Alignment = Element.ALIGN_CENTER });
 
-                PdfPCell cellRight = new PdfPCell();
-                cellRight.Border = PdfPCell.NO_BORDER;
-                cellRight.HorizontalAlignment = Element.ALIGN_CENTER;
-                cellRight.VerticalAlignment = Element.ALIGN_TOP;
+                PdfPCell cellRight = new PdfPCell { Border = PdfPCell.NO_BORDER, HorizontalAlignment = Element.ALIGN_CENTER, VerticalAlignment = Element.ALIGN_TOP };
                 cellRight.AddElement(new Paragraph("CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM", fontHeader) { Alignment = Element.ALIGN_CENTER });
                 cellRight.AddElement(new Paragraph("Độc lập - Tự do - Hạnh phúc", fontHeaderItalic) { Alignment = Element.ALIGN_CENTER });
                 cellRight.AddElement(new Paragraph("***********", fontHeaderItalic) { Alignment = Element.ALIGN_CENTER });
@@ -1093,50 +1087,34 @@ namespace DAT_ToolReports
                 document.Add(headerTable);
 
                 // Title
-                Paragraph title = new Paragraph("BÁO CÁO QUÁ TRÌNH ĐÀO TẠO CỦA HỌC VIÊN THỰC HÀNH LÁI XE TRÊN ĐƯỜNG\nCỦA KHOÁ HỌC", fontTitle);
-                title.Alignment = Element.ALIGN_CENTER;
-                title.SpacingBefore = 10;
+                Paragraph title = new Paragraph("BÁO CÁO QUÁ TRÌNH ĐÀO TẠO CỦA HỌC VIÊN THỰC HÀNH LÁI XE TRÊN ĐƯỜNG\nCỦA KHOÁ HỌC", fontTitle)
+                { Alignment = Element.ALIGN_CENTER, SpacingBefore = 10 };
                 document.Add(title);
 
-                Paragraph reportDate = new Paragraph($"(Ngày báo cáo: ngày {DateTime.Now.Day} tháng {DateTime.Now.Month} năm {DateTime.Now.Year})", fontHeaderItalic);
-                reportDate.Alignment = Element.ALIGN_CENTER;
-                reportDate.SpacingAfter = 10;
+                Paragraph reportDate = new Paragraph($"(Ngày báo cáo: ngày {DateTime.Now.Day} tháng {DateTime.Now.Month} năm {DateTime.Now.Year})", fontHeaderItalic)
+                { Alignment = Element.ALIGN_CENTER, SpacingAfter = 10 };
                 document.Add(reportDate);
 
-                // Section I: Thông tin học viên + ảnh
-                Paragraph sectionI = new Paragraph("I. Thông tin học viên", fontHeader);
-                sectionI.Alignment = Element.ALIGN_LEFT;
-                sectionI.SpacingAfter = 5;
+                // Section I: Thông tin học viên
+                Paragraph sectionI = new Paragraph("I. Thông tin học viên", fontHeader) { Alignment = Element.ALIGN_LEFT, SpacingAfter = 5 };
                 document.Add(sectionI);
 
-                // Table 2 cột: cột trái info, cột phải ảnh
-                PdfPTable infoTable = new PdfPTable(2);
-                infoTable.WidthPercentage = 100;
-                infoTable.SetWidths(new float[] { 70f, 30f }); // 70% thông tin, 30% ảnh
+                PdfPTable infoTable = new PdfPTable(2) { WidthPercentage = 100 };
+                infoTable.SetWidths(new float[] { 70f, 30f });
 
-                // Cột thông tin
-                PdfPCell infoCell = new PdfPCell();
-                infoCell.Border = PdfPCell.NO_BORDER;
-
+                PdfPCell infoCell = new PdfPCell { Border = PdfPCell.NO_BORDER };
                 iTextSharp.text.List infoList = new iTextSharp.text.List(iTextSharp.text.List.ORDERED);
-                infoList.Add(new ListItem($"Họ và tên: {TraineeName}", fontTableCell));
-                infoList.Add(new ListItem($"Mã học viên: {MaDK}", fontTableCell));
-                infoList.Add(new ListItem($"Ngày sinh: {NgaySinh}", fontTableCell));
-                infoList.Add(new ListItem($"Hạng đào tạo: {HangDT}", fontTableCell));
-                infoList.Add(new ListItem($"Khóa học: {KhoaHoc}", fontTableCell));
-                infoList.Add(new ListItem($"Cơ sở đào tạo: {DAT_ToolReports.Properties.Settings.Default.Centre}", fontTableCell));
-
+                infoList.Add(new ListItem($"Họ và tên: {TraineeName}", fontInfoCell));
+                infoList.Add(new ListItem($"Mã học viên: {MaDK}", fontInfoCell));
+                infoList.Add(new ListItem($"Ngày sinh: {NgaySinh}", fontInfoCell));
+                infoList.Add(new ListItem($"Hạng đào tạo: {HangDT}", fontInfoCell));
+                infoList.Add(new ListItem($"Khóa học: {KhoaHoc}", fontInfoCell));
+                infoList.Add(new ListItem($"Cơ sở đào tạo: {DAT_ToolReports.Properties.Settings.Default.Centre}", fontInfoCell));
                 infoCell.AddElement(infoList);
                 infoTable.AddCell(infoCell);
 
-                // Cột ảnh học viên
-                PdfPCell photoCell = new PdfPCell();
-                photoCell.Border = PdfPCell.NO_BORDER;
-                photoCell.HorizontalAlignment = Element.ALIGN_CENTER;
-                photoCell.VerticalAlignment = Element.ALIGN_MIDDLE;
-
-                // Sử dụng đường dẫn ảnh đã tải về trước đó
-                string pathToPhoto = fileNameImage; // fileNameImage đã được xác định trong xuấtRaFileToolStripMenuItemPdf_Click
+                PdfPCell photoCell = new PdfPCell { Border = PdfPCell.NO_BORDER, HorizontalAlignment = Element.ALIGN_CENTER, VerticalAlignment = Element.ALIGN_MIDDLE };
+                string pathToPhoto = fileNameImage;
                 if (File.Exists(pathToPhoto))
                 {
                     iTextSharp.text.Image traineeImage = iTextSharp.text.Image.GetInstance(pathToPhoto);
@@ -1146,131 +1124,108 @@ namespace DAT_ToolReports
                 }
                 else
                 {
-                    // Nếu ảnh không tồn tại, có thể thêm placeholder text
                     photoCell.AddElement(new Paragraph("Chưa có ảnh", fontTableCell) { Alignment = Element.ALIGN_CENTER });
                 }
-
                 infoTable.AddCell(photoCell);
-
-                // Thêm bảng infoTable vào document
                 document.Add(infoTable);
 
-
-                // Section II
-                Paragraph sectionII = new Paragraph("II. Thông tin quá trình đào tạo", fontHeader);
-                sectionII.Alignment = Element.ALIGN_CENTER;
-                sectionII.SpacingAfter = 5;
+                // Section II: Bảng dữ liệu đào tạo
+                Paragraph sectionII = new Paragraph("II. Thông tin quá trình đào tạo", fontHeader) { Alignment = Element.ALIGN_CENTER, SpacingAfter = 5 };
                 document.Add(sectionII);
 
-                // ----- Bảng dữ liệu -----
-                PdfPTable table = new PdfPTable(9);
-                table.WidthPercentage = 100;
-                table.SetWidths(new float[] { 3f, 10f, 10f, 8f, 10f, 10f, 8f, 8f, 8f });
-
+                PdfPTable table = new PdfPTable(9) { WidthPercentage = 100 };
+                table.SetWidths(new float[] { 5f, 28f, 8f, 5f, 15f, 15f, 5f, 6f, 6f });
                 string[] cols = { "STT", "Phiên đào tạo", "Biển số xe tập lái", "Hạng xe tập lái", "Bắt đầu", "Kết thúc", "Thời gian đào tạo", "Số giờ đêm", "Quãng đường đào tạo" };
                 foreach (var col in cols)
                 {
-                    PdfPCell cell2 = new PdfPCell(new Phrase(col, fontTableHeader));
-                    cell2.HorizontalAlignment = Element.ALIGN_CENTER;
-                    cell2.BackgroundColor = BaseColor.WHITE;
+                    PdfPCell cell2 = new PdfPCell(new Phrase(col, fontTableHeader)) { HorizontalAlignment = Element.ALIGN_CENTER, VerticalAlignment = Element.ALIGN_MIDDLE, BackgroundColor = BaseColor.WHITE };
                     table.AddCell(cell2);
                 }
 
                 int stt = 1;
-                double totalTime = 0;
-                double totalDistance = 0;
-                double totalNightTime = 0;
-                double totalAutoTime = 0;
+                int totalTime = 0;
+                int totalDistance = 0;
+                int totalNightTime = 0;
+                int totalAutoTime = 0;
 
                 foreach (var session in sessions)
                 {
+                    if (session == null) continue;
+
+                    int duration = session.duration ?? 0;
+                    int distance = session.distance ?? 0;
+
                     table.AddCell(new PdfPCell(new Phrase(stt.ToString(), fontTableCell)) { HorizontalAlignment = Element.ALIGN_CENTER });
                     table.AddCell(new PdfPCell(new Phrase(session.session_id, fontTableCell)));
                     table.AddCell(new PdfPCell(new Phrase(session.vehicle_plate, fontTableCell)));
                     table.AddCell(new PdfPCell(new Phrase(string.IsNullOrEmpty(session.vehicle_hang) ? HangDT : session.vehicle_hang, fontTableCell)) { HorizontalAlignment = Element.ALIGN_CENTER });
 
-                    DateTime startTime = DateTime.ParseExact(session.start_time.Substring(0, 19).Replace('T', ' '), "yyyy-MM-dd HH:mm:ss", System.Globalization.CultureInfo.InvariantCulture);
-                    DateTime endTime = startTime.AddSeconds(Convert.ToDouble(session.duration));
+                    DateTime startTime = DateTime.ParseExact(session.start_time.Substring(0, 19).Replace('T', ' '),
+                        "yyyy-MM-dd HH:mm:ss", System.Globalization.CultureInfo.InvariantCulture);
+
+                    DateTime endTime = startTime.AddSeconds(duration);
 
                     table.AddCell(new PdfPCell(new Phrase(startTime.ToString("dd/MM/yyyy HH:mm:ss"), fontTableCell)));
                     table.AddCell(new PdfPCell(new Phrase(endTime.ToString("dd/MM/yyyy HH:mm:ss"), fontTableCell)));
 
-                    string trainingTime = $"{session.duration / 3600}:{(session.duration % 3600) / 60:D2}";
+                    string trainingTime = $"{duration / 3600}:{(duration % 3600) / 60:D2}";
                     table.AddCell(new PdfPCell(new Phrase(trainingTime, fontTableCell)) { HorizontalAlignment = Element.ALIGN_CENTER });
 
-                    // Giờ đêm
-                    int nightTime = 0; // giữ logic tính giờ đêm nếu cần
+                    int nightTime = TinhGioDem(session, HangDT);
                     string nightTimeStr = $"{nightTime / 3600}:{(nightTime % 3600) / 60:D2}";
                     table.AddCell(new PdfPCell(new Phrase(nightTimeStr, fontTableCell)) { HorizontalAlignment = Element.ALIGN_CENTER });
 
-                    string distance = ((session.distance ?? 0) / 1000.0).ToString("0.###");
-                    table.AddCell(new PdfPCell(new Phrase(distance, fontTableCell)) { HorizontalAlignment = Element.ALIGN_CENTER });
+                    string distanceStr = (distance / 1000.0).ToString("0.###");
+                    table.AddCell(new PdfPCell(new Phrase(distanceStr, fontTableCell)) { HorizontalAlignment = Element.ALIGN_CENTER });
 
-                    totalTime += Convert.ToDouble(session.duration);
-                    totalDistance += Convert.ToDouble(session.distance ?? 0);
+                    totalTime += duration;
+                    totalDistance += distance;
                     totalNightTime += nightTime;
+                    totalAutoTime += TinhGioTuDong(session, HangDT);
+
                     stt++;
                 }
 
                 // Hàng tổng
                 PdfPCell totalCell = new PdfPCell(new Phrase("Tổng", fontTableHeader)) { Colspan = 6, HorizontalAlignment = Element.ALIGN_CENTER };
                 table.AddCell(totalCell);
-
-                string totalTimeStr = $"{(int)totalTime / 3600}:{((int)totalTime % 3600) / 60:D2}";
-                table.AddCell(new PdfPCell(new Phrase(totalTimeStr, fontTableHeader)) { HorizontalAlignment = Element.ALIGN_CENTER });
-
-                string totalNightStr = $"{(int)totalNightTime / 3600}:{((int)totalNightTime % 3600) / 60:D2}";
-                table.AddCell(new PdfPCell(new Phrase(totalNightStr, fontTableHeader)) { HorizontalAlignment = Element.ALIGN_CENTER });
-
-                string totalDistanceStr = (totalDistance / 1000.0).ToString("0.###");
-                table.AddCell(new PdfPCell(new Phrase(totalDistanceStr, fontTableHeader)) { HorizontalAlignment = Element.ALIGN_CENTER });
+                table.AddCell(new PdfPCell(new Phrase($"{totalTime / 3600}:{(totalTime % 3600) / 60:D2}", fontTableHeader)) { HorizontalAlignment = Element.ALIGN_CENTER });
+                table.AddCell(new PdfPCell(new Phrase($"{totalNightTime / 3600}:{(totalNightTime % 3600) / 60:D2}", fontTableHeader)) { HorizontalAlignment = Element.ALIGN_CENTER });
+                table.AddCell(new PdfPCell(new Phrase((totalDistance / 1000.0).ToString("0.###"), fontTableHeader)) { HorizontalAlignment = Element.ALIGN_CENTER });
 
                 document.Add(table);
 
-                /// Footer tổng hợp
-                PdfPTable tableFooter = new PdfPTable(1); // 1 cột để căn phải cả cụm
-                tableFooter.WidthPercentage = 100;
-
+                // Footer tổng hợp
+                PdfPTable tableFooter = new PdfPTable(1) { WidthPercentage = 100 };
                 string[] resultLabels = { "Quãng đường đào tạo", "Thời gian đào tạo", "Số giờ đêm", "Số giờ tự động" };
                 string[] resultValues = {
-    (totalDistance / 1000).ToString("0.##"),
-    $"{((int)(totalTime / 3600))}:{((int)((totalTime % 3600)/60)):00}",
-    $"{((int)(totalNightTime / 3600))}:{((int)((totalNightTime % 3600)/60)):00}",
-    $"{((int)(totalAutoTime / 3600))}:{((int)((totalAutoTime % 3600)/60)):00}"
-};
+            (totalDistance / 1000.0).ToString("0.##"),
+            $"{totalTime / 3600}:{(totalTime % 3600)/60:D2}",
+            $"{totalNightTime / 3600}:{(totalNightTime % 3600)/60:D2}",
+            $"{totalAutoTime / 3600}:{(totalAutoTime % 3600)/60:D2}"
+        };
 
                 for (int i = 0; i < resultLabels.Length; i++)
                 {
-                    PdfPCell cell = new PdfPCell(new Phrase($"{resultLabels[i]}: {resultValues[i]}", fontTableCell));
-                    cell.Border = PdfPCell.NO_BORDER;
-                    cell.HorizontalAlignment = Element.ALIGN_RIGHT;
+                    PdfPCell cell = new PdfPCell(new Phrase($"{resultLabels[i]}: {resultValues[i]}", fontInfoCell))
+                    { Border = PdfPCell.NO_BORDER, HorizontalAlignment = Element.ALIGN_RIGHT };
                     tableFooter.AddCell(cell);
                 }
-
                 document.Add(tableFooter);
 
-                PdfPTable signatureGroup = new PdfPTable(1);
-                signatureGroup.TotalWidth = 250f;
-                signatureGroup.LockedWidth = true;
-                signatureGroup.HorizontalAlignment = Element.ALIGN_RIGHT;
+                // Ký
+                PdfPTable signatureGroup = new PdfPTable(1) { TotalWidth = 250f, LockedWidth = true, HorizontalAlignment = Element.ALIGN_RIGHT };
                 signatureGroup.DefaultCell.Border = PdfPCell.NO_BORDER;
 
-                PdfPCell dateCell = new PdfPCell(new Phrase(
-                    $"{DAT_ToolReports.Properties.Settings.Default.Province}, ngày {DateTime.Now.Day} tháng {DateTime.Now.Month} năm {DateTime.Now.Year}",
-                    fontTableCell));
-                dateCell.Border = PdfPCell.NO_BORDER;
-                dateCell.HorizontalAlignment = Element.ALIGN_CENTER;
-                dateCell.PaddingBottom = 5f;
+                PdfPCell dateCell = new PdfPCell(new Phrase($"{DAT_ToolReports.Properties.Settings.Default.Province}, ngày {DateTime.Now.Day} tháng {DateTime.Now.Month} năm {DateTime.Now.Year}", fontSigCell))
+                { Border = PdfPCell.NO_BORDER, HorizontalAlignment = Element.ALIGN_CENTER, PaddingBottom = 5f };
                 signatureGroup.AddCell(dateCell);
 
-                PdfPCell signatureCell = new PdfPCell(new Phrase("Chữ ký học viên", fontTableHeader));
-                signatureCell.Border = PdfPCell.NO_BORDER;
-                signatureCell.HorizontalAlignment = Element.ALIGN_CENTER;
+                PdfPCell signatureCell = new PdfPCell(new Phrase("Chữ ký học viên", fontSigCell))
+                { Border = PdfPCell.NO_BORDER, HorizontalAlignment = Element.ALIGN_CENTER };
                 signatureGroup.AddCell(signatureCell);
 
                 document.Add(signatureGroup);
-
-
 
                 document.Close();
                 MessageBox.Show($"PDF đã được tạo: {filePDF}");
@@ -1280,6 +1235,59 @@ namespace DAT_ToolReports
                 MessageBox.Show("Lỗi xuất PDF: " + ex.Message);
             }
         }
+
+        // --- Hàm tính giờ đêm ---
+        private int TinhGioDem(SessionRes session, string HangDT)
+        {
+            int CountTimeNight = 0;
+
+            int iNightTime1 = DAT_ToolReports.Properties.Settings.Default.NightHour1 * 60 + DAT_ToolReports.Properties.Settings.Default.NightMinute1;
+            int iNightTime2 = DAT_ToolReports.Properties.Settings.Default.NightHour2 * 60 + DAT_ToolReports.Properties.Settings.Default.NightMinute2;
+
+            DateTime startTime = DateTime.ParseExact(session.start_time.Substring(0, 19).Replace('T', ' '),
+                "yyyy-MM-dd HH:mm:ss", System.Globalization.CultureInfo.InvariantCulture);
+
+            int iStartTimeMinute = startTime.Hour * 60 + startTime.Minute;
+            bool bHangAT = session.vehicle_hang?.Trim().Length > 2;
+            int duration = session.duration ?? 0;
+
+            if ((DAT_ToolReports.Properties.Settings.Default.NightByStart == false) || (iStartTimeMinute >= iNightTime1 || iStartTimeMinute < iNightTime2))
+            {
+                if (!bHangAT || DAT_ToolReports.Properties.Settings.Default.CountATforNight || HangDT.Trim().Length > 2)
+                {
+                    DateTime endTime = startTime.AddSeconds(duration);
+
+                    if (iStartTimeMinute < iNightTime2)
+                    {
+                        int endMinute = endTime.Hour * 60 + endTime.Minute;
+                        if (endMinute <= iNightTime2)
+                            CountTimeNight += duration;
+                        else
+                            CountTimeNight += iNightTime2 * 60 - (startTime.Hour * 3600 + startTime.Minute * 60 + startTime.Second);
+                    }
+                    else if (iStartTimeMinute < iNightTime1)
+                    {
+                        int endMinute = endTime.Hour * 60 + endTime.Minute;
+                        if (endMinute >= iNightTime1)
+                            CountTimeNight += duration + (startTime.Hour * 3600 + startTime.Minute * 60 + startTime.Second - iNightTime1 * 60);
+                    }
+                    else
+                    {
+                        CountTimeNight += duration;
+                    }
+                }
+            }
+
+            return CountTimeNight;
+        }
+
+        // --- Hàm tính giờ tự động ---
+        private int TinhGioTuDong(SessionRes session, string HangDT)
+        {
+            int duration = session.duration ?? 0;
+            return (session.vehicle_hang?.Trim().Length > 2 ? duration : 0);
+        }
+
 
         private void CreatFileExcelReportCouseSession(string fileName, string HangDT, string KhoaHoc, List<SessionRes> LstTmp)
         {
@@ -2558,6 +2566,7 @@ namespace DAT_ToolReports
 
         }
 
+        //Excel danh sách học viên khoá
         private void CreatFileExcelReportCouse(string fileName, string MaKhoaHoc, string HangDT, string NgayKG, string NgayBG, string CSDT, List<TraineeRes> LstTmp)
         {
             try
@@ -2882,6 +2891,243 @@ namespace DAT_ToolReports
             Cursor.Current = Cursors.Default;
         }
 
+        //PDF danh sách học viên khoá
+        private void CreateFilePdfReportCourse(string filePDF, string MaKhoaHoc,string HangDT,string NgayKG,string NgayBG,string CSDT, List<TraineeRes> trainees)
+        {
+            try
+            {
+                // ====== Document ======
+                Document document = new Document(PageSize.A4, 40, 40, 40, 40);
+                PdfWriter.GetInstance(document, new FileStream(filePDF, FileMode.Create));
+                document.Open();
+
+                System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
+
+                // Font Times New Roman
+                string fontPath = Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.Windows),
+                    @"Fonts\times.ttf"
+                );
+
+                BaseFont bf = BaseFont.CreateFont(fontPath, BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
+
+                iTextSharp.text.Font fontHeader = new iTextSharp.text.Font(bf, 13, iTextSharp.text.Font.BOLD);
+                iTextSharp.text.Font fontHeaderItalic = new iTextSharp.text.Font(bf, 13, iTextSharp.text.Font.ITALIC);
+                iTextSharp.text.Font fontTitle = new iTextSharp.text.Font(bf, 15, iTextSharp.text.Font.BOLD);
+                iTextSharp.text.Font fontSection = new iTextSharp.text.Font(bf, 13, iTextSharp.text.Font.BOLD);
+                iTextSharp.text.Font fontTableHeader = new iTextSharp.text.Font(bf, 13, iTextSharp.text.Font.BOLD);
+                iTextSharp.text.Font fontTableCell = new iTextSharp.text.Font(bf, 12, iTextSharp.text.Font.NORMAL);
+
+
+                // =================================================================
+                //  HEADER (y như Excel)
+                // =================================================================
+                PdfPTable header = new PdfPTable(2);
+                header.WidthPercentage = 100;
+                header.SetWidths(new float[] { 50f, 50f });
+
+                // BÊN TRÁI
+                PdfPCell left = new PdfPCell();
+                left.Border = iTextSharp.text.Rectangle.NO_BORDER;
+                left.HorizontalAlignment = Element.ALIGN_CENTER;
+
+                left.AddElement(new Paragraph(DAT_ToolReports.Properties.Settings.Default.Company.ToUpper(), fontHeader)
+                { Alignment = Element.ALIGN_CENTER });
+
+                left.AddElement(new Paragraph(DAT_ToolReports.Properties.Settings.Default.Centre.ToUpper(), fontHeader)
+                { Alignment = Element.ALIGN_CENTER });
+
+                left.AddElement(new Paragraph("***********", fontHeaderItalic)
+                { Alignment = Element.ALIGN_CENTER });
+
+                // BÊN PHẢI
+                PdfPCell right = new PdfPCell();
+                right.Border = iTextSharp.text.Rectangle.NO_BORDER;
+                right.HorizontalAlignment = Element.ALIGN_CENTER;
+
+                right.AddElement(new Paragraph("CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM", fontHeader)
+                { Alignment = Element.ALIGN_CENTER });
+
+                right.AddElement(new Paragraph("Độc lập - Tự do - Hạnh phúc", fontHeaderItalic)
+                { Alignment = Element.ALIGN_CENTER });
+
+                right.AddElement(new Paragraph("***********", fontHeaderItalic)
+                { Alignment = Element.ALIGN_CENTER });
+
+                header.AddCell(left);
+                header.AddCell(right);
+                document.Add(header);
+
+
+                // =================================================================
+                // TITLE
+                // =================================================================
+                Paragraph title = new Paragraph("BÁO CÁO KẾT QUẢ THỰC HÀNH LÁI XE CỦA KHÓA HỌC", fontTitle);
+                title.Alignment = Element.ALIGN_CENTER;
+                title.SpacingBefore = 10;
+                document.Add(title);
+
+                Paragraph dateReport = new Paragraph(
+                    $"(Ngày báo cáo: ngày {DateTime.Now.Day} tháng {DateTime.Now.Month} năm {DateTime.Now.Year})",
+                    fontHeaderItalic
+                );
+                dateReport.Alignment = Element.ALIGN_CENTER;
+                dateReport.SpacingAfter = 10;
+                document.Add(dateReport);
+
+
+                // =================================================================
+                // I. THÔNG TIN KHÓA HỌC
+                // =================================================================
+                Paragraph sec1 = new Paragraph("I. Thông tin khóa học", fontSection);
+                sec1.SpacingBefore = 10;
+                sec1.SpacingAfter = 5;
+                sec1.Alignment = Element.ALIGN_LEFT;
+                document.Add(sec1);
+
+                PdfPTable info = new PdfPTable(2);
+                info.WidthPercentage = 100;
+                info.SetWidths(new float[] { 30f, 70f });
+
+                AddRow(info, "Mã khóa học:", MaKhoaHoc, fontTableCell);
+                AddRow(info, "Hạng đào tạo:", HangDT, fontTableCell);
+                AddRow(info, "Ngày khai giảng:", FormatDate(NgayKG), fontTableCell);
+                AddRow(info, "Ngày bế giảng:", FormatDate(NgayBG), fontTableCell);
+                AddRow(info, "Cơ sở đào tạo:", DAT_ToolReports.Properties.Settings.Default.Centre, fontTableCell);
+
+                document.Add(info);
+
+                // =================================================================
+                // II. THÔNG TIN QUÁ TRÌNH ĐÀO TẠO
+                // =================================================================
+                Paragraph sec2 = new Paragraph("II. Thông tin quá trình đào tạo", fontSection);
+                sec2.Alignment = Element.ALIGN_LEFT;
+                sec2.SpacingBefore = 10;
+                sec2.SpacingAfter = 5;
+                document.Add(sec2);
+
+                // =================================================================
+                // BẢNG DỮ LIỆU
+                // =================================================================
+                PdfPTable table = new PdfPTable(9);
+                table.WidthPercentage = 100;
+                table.SetWidths(new float[] { 5f, 20f, 15f, 15f, 10f, 15f, 15f, 15f, 15f });
+
+                string[] headers = {
+            "STT","Họ và tên","Ngày sinh","Mã học viên","Hạng",
+            "Thời gian đào tạo","Quãng đường đào tạo","Thời gian học số tự động","Thời gian học ban đêm"
+        };
+
+                foreach (var h in headers)
+                {
+                    PdfPCell c = new PdfPCell(new Phrase(h, fontTableHeader));
+                    c.HorizontalAlignment = Element.ALIGN_CENTER;
+                    c.VerticalAlignment = Element.ALIGN_MIDDLE;
+                    c.BackgroundColor = BaseColor.WHITE;
+                    table.AddCell(c);
+                }
+
+                int index = 1;
+                foreach (var t in trainees)
+                {
+                    table.AddCell(MakeCell(index.ToString(), fontTableCell, true));
+                    table.AddCell(MakeCell(t.ho_va_ten, fontTableCell));
+                    table.AddCell(MakeCell(FormatDate(t.ngay_sinh), fontTableCell, true));
+                    table.AddCell(MakeCell(t.ma_dk, fontTableCell, true));
+                    table.AddCell(MakeCell(t.hang_daotao, fontTableCell, true));
+
+                    string timeTrain = $"{(t.outdoor_hour / 3600)}:{(t.outdoor_hour % 3600) / 60}";
+                    table.AddCell(MakeCell(timeTrain, fontTableCell, true));
+
+                    string dist = (t.outdoor_distance / 1000.0).ToString("0.###");
+                    table.AddCell(MakeCell(dist, fontTableCell, true));
+
+                    string auto = $"{(t.auto_duration / 3600)}:{(t.auto_duration % 3600) / 60}";
+                    table.AddCell(MakeCell(auto, fontTableCell, true));
+
+                    string night = $"{(t.night_duration / 3600)}:{(t.night_duration % 3600) / 60}";
+                    table.AddCell(MakeCell(night, fontTableCell, true));
+
+                    index++;
+                }
+
+                document.Add(table);
+
+
+                // =================================================================
+                // FOOTER
+                // =================================================================
+                PdfPTable footer = new PdfPTable(1);
+                footer.TotalWidth = 200;
+                footer.LockedWidth = true;
+                footer.HorizontalAlignment = Element.ALIGN_RIGHT;
+
+                PdfPCell f = new PdfPCell();
+                f.Border = iTextSharp.text.Rectangle.NO_BORDER;
+                f.PaddingTop = 20;
+
+                Paragraph dateFooter = new Paragraph(
+                     $"{DAT_ToolReports.Properties.Settings.Default.Province}, ngày {DateTime.Now.Day} tháng {DateTime.Now.Month} năm {DateTime.Now.Year}",
+                     fontHeaderItalic
+                );
+                dateFooter.Alignment = Element.ALIGN_CENTER;
+                f.AddElement(dateFooter);
+
+                Paragraph sign = new Paragraph("Trưởng phòng đào tạo\n(ký tên)", fontHeader);
+                sign.Alignment = Element.ALIGN_CENTER;
+
+                f.AddElement(sign);
+                footer.AddCell(f);
+
+                document.Add(footer);
+
+                // Close
+                document.Close();
+
+                MessageBox.Show("PDF đã tạo: " + filePDF);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Lỗi xuất PDF: " + ex.Message);
+            }
+        }
+       
+        private string FormatDate(string yyyymmdd)
+        {
+            return yyyymmdd.Substring(8, 2) + "/" +
+                   yyyymmdd.Substring(5, 2) + "/" +
+                   yyyymmdd.Substring(0, 4);
+        }
+
+        private void AddRow(PdfPTable table, string label, string value, iTextSharp.text.Font font)
+        {
+            PdfPCell c1 = new PdfPCell(new Phrase(label, font));
+            c1.Border = iTextSharp.text.Rectangle.NO_BORDER;
+
+            PdfPCell c2 = new PdfPCell(new Phrase(value, font));
+            c2.Border = iTextSharp.text.Rectangle.NO_BORDER;
+
+            table.AddCell(c1);
+            table.AddCell(c2);
+        }
+
+        private PdfPCell MakeCell(string text, iTextSharp.text.Font font, bool center = false)
+        {
+            PdfPCell c = new PdfPCell(new Phrase(text, font));
+            if (center)
+            {
+                c.HorizontalAlignment = Element.ALIGN_CENTER;
+                c.VerticalAlignment = Element.ALIGN_MIDDLE;
+            }
+            return c;
+        }
+
+
+
+
+        //---------------------------------------------------
+
+        //Excel danh sách phiên của học viên
         private void CreatFileExcelReportCouse_FromExcel(string fileName, string sThongTinFile, List<TraineeRes> LstTmp)
         {
             try
@@ -3183,14 +3429,13 @@ namespace DAT_ToolReports
             Cursor.Current = Cursors.Default;
         }
 
-
         //PDF
         private void CreatFilePdfReportSession_FromExcel(string filePDF, string reportName, List<TraineeRes> trainees)
         {
             try
             {
                 // Landscape
-                Document document = new Document(PageSize.A4.Rotate(), 40, 40, 40, 40);
+                Document document = new Document(PageSize.A4, 40, 40, 40, 40);
                 PdfWriter.GetInstance(document, new FileStream(filePDF, FileMode.Create));
                 document.Open();
                 
@@ -3625,7 +3870,7 @@ namespace DAT_ToolReports
             }
             Cursor.Current = Cursors.Default;
         }
-
+        //Excel
         private void xuấtDanhSáchRaFileToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (accessToken == "")
@@ -3683,6 +3928,114 @@ namespace DAT_ToolReports
             OpenMyExcelFile(fileName);
 
         }
+
+        //PDF
+        private void xuấtDanhSáchRaFilePdfToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (accessToken == "")
+            {
+                return;
+            }
+
+            int count = 1;
+            int SoHV = Int32.Parse(dgvCoures.CurrentRow.Cells[4].Value.ToString());
+            TenKhoaHoc = dgvCoures.CurrentRow.Cells[2].Value.ToString();
+            HangDaoTao = dgvCoures.CurrentRow.Cells[3].Value.ToString();
+            dgwTrainees.Rows.Clear();
+
+            IRestRequest request;
+            IRestResponse<ResultTraineeRes> response;
+            List<TraineeRes> lisTrainees = new List<TraineeRes>();
+
+            if (SoHV <= 50)
+            {
+                request = new RestRequest("/trainees", Method.GET)
+                    .AddQueryParameter("course_id", dgvCoures.CurrentRow.Cells[0].Value.ToString())
+                    .AddParameter("page_size", 50);
+
+                response = client.Get<ResultTraineeRes>(request);
+
+                if (chkbSortID.Checked)
+                    lisTrainees = response.Data.items.OrderByDescending(item => item.outdoor_hour).ToList();
+                else
+                    lisTrainees = response.Data.items.OrderByDescending(item => item.outdoor_distance).ToList();
+            }
+            else
+            {
+                int Page = SoHV / 50 + 1;
+                for (int k = 0; k < Page; k++)
+                {
+                    request = new RestRequest("/trainees", Method.GET)
+                        .AddQueryParameter("course_id", dgvCoures.CurrentRow.Cells[0].Value.ToString())
+                        .AddParameter("page", k + 1)
+                        .AddParameter("page_size", 50);
+
+                    response = client.Get<ResultTraineeRes>(request);
+                    lisTrainees.AddRange(response.Data.items.ToList());
+                }
+
+                if (chkbSortID.Checked)
+                    lisTrainees = lisTrainees.OrderByDescending(item => item.outdoor_hour).ToList();
+                else
+                    lisTrainees = lisTrainees.OrderByDescending(item => item.outdoor_distance).ToList();
+            }
+
+            foreach (TraineeRes trainee in lisTrainees)
+            {
+                count++;
+                dgwTrainees.Rows.Add(
+                    (count - 1).ToString(),
+                    trainee.id.ToString(),
+                    trainee.ho_va_ten,
+                    trainee.ngay_sinh,
+                    trainee.synced_outdoor_hours.ToString(),
+                    trainee.synced_outdoor_distance.ToString(),
+                    (trainee.outdoor_hour / 3600).ToString(),
+                    (trainee.outdoor_distance / 1000).ToString(),
+                    trainee.outdoor_session_count.ToString(),
+                    trainee.ma_dk,
+                    trainee.anh_chan_dung
+                );
+            }
+
+
+            // ===========================
+            // GỌI XUẤT FILE PDF
+            // ===========================
+
+            int row = dgvCoures.CurrentRow.Index;
+
+            string folder = @"C:\Report_DAT\";
+            if (!Directory.Exists(folder))
+                Directory.CreateDirectory(folder);
+
+            string filePDF = folder + dgvCoures[1, row].Value.ToString() + ".pdf";
+
+            string MaKhoaHoc = dgvCoures.CurrentRow.Cells[1].Value.ToString();
+            string HangDT = dgvCoures.CurrentRow.Cells[3].Value.ToString();
+            string NgayKG = dgvCoures.CurrentRow.Cells[5].Value.ToString();
+            string NgayBG = dgvCoures.CurrentRow.Cells[6].Value.ToString();
+            string CSDT = "Không dùng đến";
+
+            CreateFilePdfReportCourse(
+                filePDF,
+                MaKhoaHoc,
+                HangDT,
+                NgayKG,
+                NgayBG,
+                CSDT,
+                lisTrainees
+            );
+
+            var psi = new ProcessStartInfo()
+            {
+                FileName = filePDF,
+                UseShellExecute = true
+            };
+
+            Process.Start(psi);
+        }
+
 
         private void inDanhSáchToolStripMenuItem_Click(object sender, EventArgs e)
         {
