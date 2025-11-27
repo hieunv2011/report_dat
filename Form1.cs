@@ -27,7 +27,6 @@ using iTextSharp.text;
 using iTextSharp.text.pdf;
 
 
-
 namespace DAT_ToolReports
 {
     public partial class Form1 : Form
@@ -82,11 +81,17 @@ namespace DAT_ToolReports
             public double synced_outdoor_distance;
             public int auto_duration;
             public int night_duration;
+            public double remaining_distance;
+            public int remaining_duration;
+            public int remaining_auto_duration;
+            public int remaining_night_duration;
         }
         public class ResultTraineeRes
         {
             public List<TraineeRes> items;
         }
+
+
         public class SessionRes
         {
             public string? created_date;
@@ -109,7 +114,7 @@ namespace DAT_ToolReports
             public string? instructor_name;
             public int? trainee_id;
             public string? trainee_name;
-            public string? trainee_ma_dk; 
+            public string? trainee_ma_dk;
             public int? device_id;
             public string? device_serial;
             public int? vehicle_id;
@@ -632,6 +637,7 @@ namespace DAT_ToolReports
                 Cells["A7"].Value = "(Ngày báo cáo: " + "ngày " + DateTime.Now.Day.ToString() + " tháng " + DateTime.Now.Month.ToString() + " năm " + DateTime.Now.Year.ToString() + ")";
                 Cells["A7"].SetStyle(styleKhoaThi);
 
+
                 //========================================
                 Cells.Merge(8, 0, 1, 10);
                 Cells[8, 0].Value = "I. Thông tin học viên";
@@ -807,10 +813,10 @@ namespace DAT_ToolReports
                     Cells[row, 3].Value = sHangXe;
                     DateTime StartTime = DateTime.ParseExact(LstTmp[i].start_time.Substring(0, 19).Replace('T', ' '), "yyyy-MM-dd HH:mm:ss", System.Globalization.CultureInfo.InvariantCulture);
                     Cells[row, 4].Value = StartTime.ToShortDateString() + " " + StartTime.ToLongTimeString(); //StartTime.Day.ToString() + "/" + StartTime.Month.ToString() + "/" + StartTime.Year.ToString() + " " +
-                        //StartTime.Hour.ToString() + ":" + StartTime.Minute.ToString() + ":" + StartTime.Second.ToString();
+                                                                                                              //StartTime.Hour.ToString() + ":" + StartTime.Minute.ToString() + ":" + StartTime.Second.ToString();
                     DateTime StopTime = StartTime.AddSeconds(Convert.ToDouble(LstTmp[i].duration));
                     Cells[row, 5].Value = StopTime.ToShortDateString() + " " + StopTime.ToLongTimeString(); //StopTime.Day.ToString() + "/" + StopTime.Month.ToString() + "/" + StopTime.Year.ToString() + " " +
-                        //StopTime.Hour.ToString() + ":" + StopTime.Minute.ToString() + ":" + StopTime.Second.ToString();
+                                                                                                            //StopTime.Hour.ToString() + ":" + StopTime.Minute.ToString() + ":" + StopTime.Second.ToString();
                     sPhut = ((LstTmp[i].duration / 60) % 60).ToString();
                     if (sPhut.Length < 2) sPhut = "0" + sPhut;
                     Cells[row, 6].Value = ((LstTmp[i].duration / 60) / 60).ToString() + ":" + sPhut;
@@ -1087,7 +1093,7 @@ namespace DAT_ToolReports
                 document.Add(headerTable);
 
                 // Title
-                Paragraph title = new Paragraph("BÁO CÁO QUÁ TRÌNH ĐÀO TẠO CỦA HỌC VIÊN THỰC HÀNH LÁI XE TRÊN ĐƯỜNG\nCỦA KHOÁ HỌC", fontTitle)
+                Paragraph title = new Paragraph("BÁO CÁO QUÁ TRÌNH ĐÀO TẠO THỰC HÀNH LÁI XE \n TRÊN ĐƯỜNG GIAO THÔNG CỦA HỌC VIÊN", fontTitle)
                 { Alignment = Element.ALIGN_CENTER, SpacingBefore = 10 };
                 document.Add(title);
 
@@ -1096,7 +1102,7 @@ namespace DAT_ToolReports
                 document.Add(reportDate);
 
                 // Section I: Thông tin học viên
-                Paragraph sectionI = new Paragraph("I. Thông tin học viên", fontHeader) { Alignment = Element.ALIGN_LEFT, SpacingAfter = 5 };
+                Paragraph sectionI = new Paragraph("I. Thông tin học viên", fontHeader) { Alignment = Element.ALIGN_CENTER, SpacingAfter = 5 };
                 document.Add(sectionI);
 
                 PdfPTable infoTable = new PdfPTable(2) { WidthPercentage = 100 };
@@ -2669,7 +2675,7 @@ namespace DAT_ToolReports
                 styleTitle.Font.Name = "Times New Roman";
 
                 Cells.Merge(5, 0, 1, 9);
-                Cells["A6"].Value = "BÁO CÁO KẾT QUẢ THỰC HÀNH LÁI XE CỦA KHÓA HỌC";
+                Cells["A6"].Value = "BÁO CÁO KẾT QUẢ THỰC HÀNH LÁI XE \n TRÊN ĐƯỜNG GIAO THÔNG CỦA KHÓA HỌC";
                 Cells["A6"].SetStyle(styleTitle);
 
                 Aspose.Cells.Style styleKhoaThi;
@@ -2892,7 +2898,7 @@ namespace DAT_ToolReports
         }
 
         //PDF danh sách học viên khoá
-        private void CreateFilePdfReportCourse(string filePDF, string MaKhoaHoc,string HangDT,string NgayKG,string NgayBG,string CSDT, List<TraineeRes> trainees)
+        private void CreateFilePdfReportCourse(string filePDF, string MaKhoaHoc, string HangDT, string NgayKG, string NgayBG, string CSDT, List<TraineeRes> trainees)
         {
             try
             {
@@ -2911,16 +2917,17 @@ namespace DAT_ToolReports
 
                 BaseFont bf = BaseFont.CreateFont(fontPath, BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
 
-                iTextSharp.text.Font fontHeader = new iTextSharp.text.Font(bf, 13, iTextSharp.text.Font.BOLD);
-                iTextSharp.text.Font fontHeaderItalic = new iTextSharp.text.Font(bf, 13, iTextSharp.text.Font.ITALIC);
-                iTextSharp.text.Font fontTitle = new iTextSharp.text.Font(bf, 15, iTextSharp.text.Font.BOLD);
-                iTextSharp.text.Font fontSection = new iTextSharp.text.Font(bf, 13, iTextSharp.text.Font.BOLD);
-                iTextSharp.text.Font fontTableHeader = new iTextSharp.text.Font(bf, 13, iTextSharp.text.Font.BOLD);
-                iTextSharp.text.Font fontTableCell = new iTextSharp.text.Font(bf, 12, iTextSharp.text.Font.NORMAL);
+                iTextSharp.text.Font fontHeader = new iTextSharp.text.Font(bf, 11, iTextSharp.text.Font.BOLD);
+                iTextSharp.text.Font fontHeaderItalic = new iTextSharp.text.Font(bf, 11, iTextSharp.text.Font.ITALIC);
+                iTextSharp.text.Font fontTitle = new iTextSharp.text.Font(bf, 11, iTextSharp.text.Font.BOLD);
+                iTextSharp.text.Font fontSection = new iTextSharp.text.Font(bf, 11, iTextSharp.text.Font.BOLD);
+                iTextSharp.text.Font fontTableHeader = new iTextSharp.text.Font(bf, 11, iTextSharp.text.Font.BOLD);
+                iTextSharp.text.Font fontTableCell = new iTextSharp.text.Font(bf, 8, iTextSharp.text.Font.NORMAL);
+                iTextSharp.text.Font fontInfoCell = new iTextSharp.text.Font(bf, 11, iTextSharp.text.Font.NORMAL);
 
 
                 // =================================================================
-                //  HEADER (y như Excel)
+                //  HEADER
                 // =================================================================
                 PdfPTable header = new PdfPTable(2);
                 header.WidthPercentage = 100;
@@ -2962,7 +2969,7 @@ namespace DAT_ToolReports
                 // =================================================================
                 // TITLE
                 // =================================================================
-                Paragraph title = new Paragraph("BÁO CÁO KẾT QUẢ THỰC HÀNH LÁI XE CỦA KHÓA HỌC", fontTitle);
+                Paragraph title = new Paragraph("BÁO CÁO QUÁ TRÌNH ĐÀO TẠO THỰC HÀNH LÁI XE \n TRÊN ĐƯỜNG GIAO THÔNG CỦA KHOÁ HỌC", fontTitle);
                 title.Alignment = Element.ALIGN_CENTER;
                 title.SpacingBefore = 10;
                 document.Add(title);
@@ -2982,18 +2989,19 @@ namespace DAT_ToolReports
                 Paragraph sec1 = new Paragraph("I. Thông tin khóa học", fontSection);
                 sec1.SpacingBefore = 10;
                 sec1.SpacingAfter = 5;
-                sec1.Alignment = Element.ALIGN_LEFT;
+                sec1.Alignment = Element.ALIGN_CENTER;
                 document.Add(sec1);
 
                 PdfPTable info = new PdfPTable(2);
+                info.HorizontalAlignment = Element.ALIGN_LEFT;
                 info.WidthPercentage = 100;
                 info.SetWidths(new float[] { 30f, 70f });
 
-                AddRow(info, "Mã khóa học:", MaKhoaHoc, fontTableCell);
-                AddRow(info, "Hạng đào tạo:", HangDT, fontTableCell);
-                AddRow(info, "Ngày khai giảng:", FormatDate(NgayKG), fontTableCell);
-                AddRow(info, "Ngày bế giảng:", FormatDate(NgayBG), fontTableCell);
-                AddRow(info, "Cơ sở đào tạo:", DAT_ToolReports.Properties.Settings.Default.Centre, fontTableCell);
+                AddRow(info, "Mã khóa học:", MaKhoaHoc, fontInfoCell);
+                AddRow(info, "Hạng đào tạo:", HangDT, fontInfoCell);
+                AddRow(info, "Ngày khai giảng:", FormatDate(NgayKG), fontInfoCell);
+                AddRow(info, "Ngày bế giảng:", FormatDate(NgayBG), fontInfoCell);
+                AddRow(info, "Cơ sở đào tạo:", DAT_ToolReports.Properties.Settings.Default.Centre, fontInfoCell);
 
                 document.Add(info);
 
@@ -3001,7 +3009,7 @@ namespace DAT_ToolReports
                 // II. THÔNG TIN QUÁ TRÌNH ĐÀO TẠO
                 // =================================================================
                 Paragraph sec2 = new Paragraph("II. Thông tin quá trình đào tạo", fontSection);
-                sec2.Alignment = Element.ALIGN_LEFT;
+                sec2.Alignment = Element.ALIGN_CENTER;
                 sec2.SpacingBefore = 10;
                 sec2.SpacingAfter = 5;
                 document.Add(sec2);
@@ -3009,14 +3017,11 @@ namespace DAT_ToolReports
                 // =================================================================
                 // BẢNG DỮ LIỆU
                 // =================================================================
-                PdfPTable table = new PdfPTable(9);
+                PdfPTable table = new PdfPTable(8);
                 table.WidthPercentage = 100;
-                table.SetWidths(new float[] { 5f, 20f, 15f, 15f, 10f, 15f, 15f, 15f, 15f });
+                table.SetWidths(new float[] { 6f, 25f, 10f, 25f, 9f, 9f, 12f, 11f});
 
-                string[] headers = {
-            "STT","Họ và tên","Ngày sinh","Mã học viên","Hạng",
-            "Thời gian đào tạo","Quãng đường đào tạo","Thời gian học số tự động","Thời gian học ban đêm"
-        };
+                string[] headers = {"STT","Họ và tên","Ngày sinh","Mã học viên","Hạng", "Tổng thời gian","Tổng quãng đường","Ghi chú"};
 
                 foreach (var h in headers)
                 {
@@ -3042,11 +3047,54 @@ namespace DAT_ToolReports
                     string dist = (t.outdoor_distance / 1000.0).ToString("0.###");
                     table.AddCell(MakeCell(dist, fontTableCell, true));
 
-                    string auto = $"{(t.auto_duration / 3600)}:{(t.auto_duration % 3600) / 60}";
-                    table.AddCell(MakeCell(auto, fontTableCell, true));
+                    bool dapUng = false;
 
-                    string night = $"{(t.night_duration / 3600)}:{(t.night_duration % 3600) / 60}";
-                    table.AddCell(MakeCell(night, fontTableCell, true));
+                    string[] baseClass = { "B", "B.01", "C1" };
+
+                    if (baseClass.Contains(t.hang_daotao))
+                    {
+                        // Điều kiện cũ
+                        dapUng =
+                            t.remaining_distance <= 0 &&
+                            t.remaining_duration <= 0 &&
+                            t.remaining_auto_duration <= 0 &&
+                            t.remaining_night_duration <= 0;
+                    }
+                    else
+                    {
+                        double nightDone = t.night_duration / 3600.0;
+                        var nightRequire = new Dictionary<string, double>
+                        {
+                            ["B-C1"] = 0.5,
+                            ["B-Cm"] = 0.5,
+                            ["B-D1"] = 0.5,
+                            ["B-D2"] = 0.5,
+
+                            ["C1-Cm"] = 0.5,
+                            ["C1-D1"] = 0.5,
+                            ["C1-D2"] = 0.5,
+
+                            ["Cm-D1"] = 0.5,
+                            ["Cm-D2"] = 0.5,
+                            ["Cm-Dm"] = 0.5,
+
+                            ["D1-D2"] = 0.5,
+                            ["D1-Dm"] = 0.5,
+                            ["D2-Dm"] = 0.5
+                        };
+                        if (nightRequire.TryGetValue(t.hang_daotao, out double needNight))
+                        {
+                            dapUng = nightDone >= needNight;
+                        }
+                        else
+                        {
+                            dapUng = false;
+                        }
+                    }
+
+                    string note = dapUng ? "Đáp ứng" : "Không đáp ứng";
+
+                    table.AddCell(MakeCell(note, fontTableCell, true));
 
                     index++;
                 }
@@ -3073,7 +3121,7 @@ namespace DAT_ToolReports
                 dateFooter.Alignment = Element.ALIGN_CENTER;
                 f.AddElement(dateFooter);
 
-                Paragraph sign = new Paragraph("Trưởng phòng đào tạo\n(ký tên)", fontHeader);
+                Paragraph sign = new Paragraph("Giám đốc \n(ký tên)", fontHeader);
                 sign.Alignment = Element.ALIGN_CENTER;
 
                 f.AddElement(sign);
@@ -3091,7 +3139,7 @@ namespace DAT_ToolReports
                 MessageBox.Show("Lỗi xuất PDF: " + ex.Message);
             }
         }
-       
+
         private string FormatDate(string yyyymmdd)
         {
             return yyyymmdd.Substring(8, 2) + "/" +
@@ -3438,7 +3486,7 @@ namespace DAT_ToolReports
                 Document document = new Document(PageSize.A4, 40, 40, 40, 40);
                 PdfWriter.GetInstance(document, new FileStream(filePDF, FileMode.Create));
                 document.Open();
-                
+
                 System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
                 // Dùng font Windows TTF
                 string fontPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), @"Fonts\times.ttf");
@@ -3626,7 +3674,7 @@ namespace DAT_ToolReports
                 string st = DAT_ToolReports.Properties.Settings.Default.Company.ToUpper();
                 int nPos = st.IndexOf(DAT_ToolReports.Properties.Settings.Default.Centre.ToUpper());
 
-                
+
 
                 Aspose.Cells.Style styleTitle;
                 styleTitle = Cells["F1"].GetStyle();
@@ -3718,7 +3766,7 @@ namespace DAT_ToolReports
                 Cells[row, 12].SetStyle(styleHeader);
                 Cells[row, 13].SetStyle(styleHeader);
                 Cells[row, 14].SetStyle(styleHeader);
-                
+
                 Aspose.Cells.Style style4;
                 style4 = Cells[row + 1, 0].GetStyle();
                 style4.Font.Size = 13;
@@ -3759,7 +3807,7 @@ namespace DAT_ToolReports
                     InforSessionReport dateAttendanceTmp = LstTmp[i];
                     Cells[row, 3].Value = LstTmp[i].ThoiGianTH;
                     Cells[row, 4].Value = LstTmp[i].QuangDuongTH;
-                    
+
                     Cells[row, 3].SetStyle(style4);
                     Cells[row, 4].SetStyle(style4);
                     row++;
@@ -4625,7 +4673,7 @@ namespace DAT_ToolReports
                 DateTime StartTime, EndTime;
                 int count = 1;
                 List<InforSessionReport> InforSessionReports = new List<InforSessionReport>();
-                
+
                 foreach (SessionRes session in SessionsFromExel)
                 {
                     //string STT = HocVienExcels.SingleOrDefault(x => x.MaDangKy == trainee.ma_dk).STT.ToString();
@@ -4636,7 +4684,7 @@ namespace DAT_ToolReports
                     dgvSessions.Rows.Add(session.session_id, session.trainee_name, StartTime.ToShortDateString() + " " + StartTime.ToLongTimeString(),
                     Truncate(((double)session.duration / 3600), 2).ToString(), Truncate(((double)session.distance / 1000), 2).ToString(), session.vehicle_plate,
                     session.faceid_success_count.ToString() + "/" + (session.faceid_failed_count + session.faceid_success_count).ToString(), session.synced.ToString(), ViPham);
-                    
+
                     InforSessionReport InforSessionReportItem = new InforSessionReport();
                     InforSessionReportItem.Sessionid = session.id;
                     InforSessionReportItem.MaPhienHoc = session.session_id;
