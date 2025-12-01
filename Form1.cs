@@ -1066,13 +1066,13 @@ namespace DAT_ToolReports
                 string fontPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), @"Fonts\times.ttf");
                 BaseFont bf = BaseFont.CreateFont(fontPath, BaseFont.IDENTITY_H, BaseFont.EMBEDDED);
 
-                iTextSharp.text.Font fontHeader = new iTextSharp.text.Font(bf, 12, iTextSharp.text.Font.BOLD);
-                iTextSharp.text.Font fontHeaderItalic = new iTextSharp.text.Font(bf, 12, iTextSharp.text.Font.ITALIC);
-                iTextSharp.text.Font fontTitle = new iTextSharp.text.Font(bf, 12, iTextSharp.text.Font.BOLD);
+                iTextSharp.text.Font fontHeader = new iTextSharp.text.Font(bf, 11, iTextSharp.text.Font.BOLD);
+                iTextSharp.text.Font fontHeaderItalic = new iTextSharp.text.Font(bf, 11, iTextSharp.text.Font.ITALIC);
+                iTextSharp.text.Font fontTitle = new iTextSharp.text.Font(bf, 11, iTextSharp.text.Font.BOLD);
                 iTextSharp.text.Font fontTableHeader = new iTextSharp.text.Font(bf, 8, iTextSharp.text.Font.BOLD);
                 iTextSharp.text.Font fontTableCell = new iTextSharp.text.Font(bf, 8, iTextSharp.text.Font.NORMAL);
-                iTextSharp.text.Font fontInfoCell = new iTextSharp.text.Font(bf, 12, iTextSharp.text.Font.NORMAL);
-                iTextSharp.text.Font fontSigCell = new iTextSharp.text.Font(bf, 12, iTextSharp.text.Font.NORMAL);
+                iTextSharp.text.Font fontInfoCell = new iTextSharp.text.Font(bf, 11, iTextSharp.text.Font.NORMAL);
+                iTextSharp.text.Font fontSigCell = new iTextSharp.text.Font(bf, 11, iTextSharp.text.Font.NORMAL);
 
                 // Header
                 PdfPTable headerTable = new PdfPTable(2) { WidthPercentage = 100 };
@@ -1141,7 +1141,7 @@ namespace DAT_ToolReports
 
                 PdfPTable table = new PdfPTable(9) { WidthPercentage = 100 };
                 table.SetWidths(new float[] { 5f, 28f, 8f, 5f, 15f, 15f, 5f, 6f, 6f });
-                string[] cols = { "STT", "Phiên đào tạo", "Biển số xe tập lái", "Hạng xe tập lái", "Bắt đầu", "Kết thúc", "Thời gian đào tạo", "Số giờ đêm", "Quãng đường đào tạo" };
+                string[] cols = { "STT", "Mã phiên học", "Biển số xe tập lái", "Hạng xe tập lái", "Bắt đầu", "Kết thúc", "Thời gian đào tạo", "Số giờ đêm", "Quãng đường đào tạo" };
                 foreach (var col in cols)
                 {
                     PdfPCell cell2 = new PdfPCell(new Phrase(col, fontTableHeader)) { HorizontalAlignment = Element.ALIGN_CENTER, VerticalAlignment = Element.ALIGN_MIDDLE, BackgroundColor = BaseColor.WHITE };
@@ -1163,7 +1163,6 @@ namespace DAT_ToolReports
 
                     table.AddCell(new PdfPCell(new Phrase(stt.ToString(), fontTableCell)) { HorizontalAlignment = Element.ALIGN_CENTER });
                     table.AddCell(new PdfPCell(new Phrase(session.session_id, fontTableCell)));
-                    table.AddCell(new PdfPCell(new Phrase(session.vehicle_plate, fontTableCell)));
                     table.AddCell(new PdfPCell(new Phrase(string.IsNullOrEmpty(session.vehicle_hang) ? HangDT : session.vehicle_hang, fontTableCell)) { HorizontalAlignment = Element.ALIGN_CENTER });
 
                     DateTime startTime = DateTime.ParseExact(session.start_time.Substring(0, 19).Replace('T', ' '),
@@ -2921,9 +2920,10 @@ namespace DAT_ToolReports
                 iTextSharp.text.Font fontHeaderItalic = new iTextSharp.text.Font(bf, 11, iTextSharp.text.Font.ITALIC);
                 iTextSharp.text.Font fontTitle = new iTextSharp.text.Font(bf, 11, iTextSharp.text.Font.BOLD);
                 iTextSharp.text.Font fontSection = new iTextSharp.text.Font(bf, 11, iTextSharp.text.Font.BOLD);
-                iTextSharp.text.Font fontTableHeader = new iTextSharp.text.Font(bf, 11, iTextSharp.text.Font.BOLD);
+                iTextSharp.text.Font fontTableHeader = new iTextSharp.text.Font(bf, 8, iTextSharp.text.Font.BOLD);
                 iTextSharp.text.Font fontTableCell = new iTextSharp.text.Font(bf, 8, iTextSharp.text.Font.NORMAL);
                 iTextSharp.text.Font fontInfoCell = new iTextSharp.text.Font(bf, 11, iTextSharp.text.Font.NORMAL);
+                iTextSharp.text.Font fontHeader2 = new iTextSharp.text.Font(bf, 8, iTextSharp.text.Font.BOLD);
 
 
                 // =================================================================
@@ -3019,29 +3019,100 @@ namespace DAT_ToolReports
                 // =================================================================
                 PdfPTable table = new PdfPTable(8);
                 table.WidthPercentage = 100;
-                table.SetWidths(new float[] { 6f, 25f, 10f, 25f, 9f, 9f, 12f, 11f});
+                table.SetWidths(new float[] { 4f, 20f, 23f, 9f, 6f, 12f, 12f, 13f});
 
-                string[] headers = {"STT","Họ và tên","Ngày sinh","Mã học viên","Hạng", "Tổng thời gian","Tổng quãng đường","Ghi chú"};
+                //string[] headers = {"STT","Mã học viên","Họ và tên","Ngày sinh","Hạng", "Tổng thời gian","Tổng quãng đường","Ghi chú"};
 
-                foreach (var h in headers)
-                {
-                    PdfPCell c = new PdfPCell(new Phrase(h, fontTableHeader));
-                    c.HorizontalAlignment = Element.ALIGN_CENTER;
-                    c.VerticalAlignment = Element.ALIGN_MIDDLE;
-                    c.BackgroundColor = BaseColor.WHITE;
-                    table.AddCell(c);
-                }
+                //foreach (var h in headers)
+                //{
+                //    PdfPCell c = new PdfPCell(new Phrase(h, fontTableHeader));
+                //    c.HorizontalAlignment = Element.ALIGN_CENTER;
+                //    c.VerticalAlignment = Element.ALIGN_MIDDLE;
+                //    c.BackgroundColor = BaseColor.WHITE;
+                //    table.AddCell(c);
+                //}
+
+                // -------------------------
+                // DÒNG 1
+                // -------------------------
+
+                // STT
+                PdfPCell h1 = new PdfPCell(new Phrase("STT", fontHeader2));
+                h1.Rowspan = 2;
+                h1.HorizontalAlignment = Element.ALIGN_CENTER;
+                h1.VerticalAlignment = Element.ALIGN_MIDDLE;
+                table.AddCell(h1);
+
+                // Mã học viên
+                PdfPCell h2 = new PdfPCell(new Phrase("Mã học viên", fontHeader2));
+                h2.Rowspan = 2;
+                h2.HorizontalAlignment = Element.ALIGN_CENTER;
+                h2.VerticalAlignment = Element.ALIGN_MIDDLE;
+                table.AddCell(h2);
+
+                // Họ và tên
+                PdfPCell h3 = new PdfPCell(new Phrase("Họ và tên", fontHeader2));
+                h3.Rowspan = 2;
+                h3.HorizontalAlignment = Element.ALIGN_CENTER;
+                h3.VerticalAlignment = Element.ALIGN_MIDDLE;
+                table.AddCell(h3);
+
+                // Ngày sinh
+                PdfPCell h4 = new PdfPCell(new Phrase("Ngày sinh", fontHeader2));
+                h4.Rowspan = 2;
+                h4.HorizontalAlignment = Element.ALIGN_CENTER;
+                h4.VerticalAlignment = Element.ALIGN_MIDDLE;
+                table.AddCell(h4);
+
+                // Hạng
+                PdfPCell h5 = new PdfPCell(new Phrase("Hạng", fontHeader2));
+                h5.Rowspan = 2;
+                h5.HorizontalAlignment = Element.ALIGN_CENTER;
+                h5.VerticalAlignment = Element.ALIGN_MIDDLE;
+                table.AddCell(h5);
+
+                // CỘT CHA: Đào tạo thực hành lái xe…
+                PdfPCell trainGroup = new PdfPCell(new Phrase(
+                    "Đào tạo thực hành lái xe trên đường giao thông",
+                    fontHeader2
+                ));
+                trainGroup.Colspan = 2;
+                trainGroup.HorizontalAlignment = Element.ALIGN_CENTER;
+                trainGroup.VerticalAlignment = Element.ALIGN_MIDDLE;
+                table.AddCell(trainGroup);
+
+                // Ghi chú
+                PdfPCell h8 = new PdfPCell(new Phrase("Ghi chú", fontHeader2));
+                h8.Rowspan = 2;
+                h8.HorizontalAlignment = Element.ALIGN_CENTER;
+                h8.VerticalAlignment = Element.ALIGN_MIDDLE;
+                table.AddCell(h8);
+
+                // -------------------------
+                // DÒNG 2 (THUỘC CỘT CHA)
+                // -------------------------
+
+                PdfPCell cTime = new PdfPCell(new Phrase("Tổng thời gian", fontHeader2));
+                cTime.HorizontalAlignment = Element.ALIGN_CENTER;
+                table.AddCell(cTime);
+
+                PdfPCell cDist = new PdfPCell(new Phrase("Tổng quãng đường", fontHeader2));
+                cDist.HorizontalAlignment = Element.ALIGN_CENTER;
+                table.AddCell(cDist);
 
                 int index = 1;
                 foreach (var t in trainees)
                 {
                     table.AddCell(MakeCell(index.ToString(), fontTableCell, true));
+                    table.AddCell(MakeCell(t.ma_dk, fontTableCell, true));
                     table.AddCell(MakeCell(t.ho_va_ten, fontTableCell));
                     table.AddCell(MakeCell(FormatDate(t.ngay_sinh), fontTableCell, true));
-                    table.AddCell(MakeCell(t.ma_dk, fontTableCell, true));
                     table.AddCell(MakeCell(t.hang_daotao, fontTableCell, true));
 
-                    string timeTrain = $"{(t.outdoor_hour / 3600)}:{(t.outdoor_hour % 3600) / 60}";
+                    int hours = t.outdoor_hour / 3600;
+                    int minutes = (t.outdoor_hour % 3600) / 60;
+                    string timeTrain = $"{hours:D2}:{minutes:D2}";
+
                     table.AddCell(MakeCell(timeTrain, fontTableCell, true));
 
                     string dist = (t.outdoor_distance / 1000.0).ToString("0.###");
@@ -3162,13 +3233,18 @@ namespace DAT_ToolReports
         private PdfPCell MakeCell(string text, iTextSharp.text.Font font, bool center = false)
         {
             PdfPCell c = new PdfPCell(new Phrase(text, font));
+            c.VerticalAlignment = Element.ALIGN_MIDDLE;
             if (center)
             {
                 c.HorizontalAlignment = Element.ALIGN_CENTER;
-                c.VerticalAlignment = Element.ALIGN_MIDDLE;
+            }
+            else
+            {
+                c.HorizontalAlignment = Element.ALIGN_LEFT;
             }
             return c;
         }
+
 
 
 
@@ -3477,7 +3553,7 @@ namespace DAT_ToolReports
             Cursor.Current = Cursors.Default;
         }
 
-        //PDF
+        //PDF danh sách phiên của học viên
         private void CreatFilePdfReportSession_FromExcel(string filePDF, string reportName, List<TraineeRes> trainees)
         {
             try
@@ -3549,7 +3625,7 @@ namespace DAT_ToolReports
                 document.Add(sectionII);
 
                 // ----- Bảng dữ liệu -----
-                PdfPTable table = new PdfPTable(9); // 9 cột đúng như mẫu
+                PdfPTable table = new PdfPTable(9);
                 table.WidthPercentage = 100;
                 table.SetWidths(new float[] { 3f, 10f, 20f, 10f, 5f, 8f, 8f, 8f, 8f });
 
